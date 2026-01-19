@@ -20,9 +20,9 @@ final class Request extends BaseRequest
 
     public function getModule(): string
     {
-        if (config('app.resolver', 'path')) {
+        if (config('app.resolver') === 'path') {
             return $this->segments[0] ?? '';
-        } else {
+        } else if (config('app.resolver') === 'subdomain') {
             $host = parse_url($this->url, PHP_URL_HOST);
             if (($host === false) || ($host === null)) {
                 return '';
@@ -33,6 +33,8 @@ final class Request extends BaseRequest
             }
             $subdomainParts = array_slice($parts, 0, -2);
             return implode('.', $subdomainParts);
+        } else {
+            throw new Exception('Module resolver not valid: ' . config('app.resolver'));
         }
     }
 
@@ -87,7 +89,9 @@ final class Request extends BaseRequest
     private function fetchUrl(): self
     {
         $uriSections = $this->segments;
-        unset($uriSections[0]);
+        if (config('app.resolver') === 'path') {
+            unset($uriSections[0]);
+        }
         $path = implode('/', $uriSections);
         $path = str_replace($this->query, '', $path);
         $this->url = trim($path, '?');

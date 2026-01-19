@@ -10,8 +10,8 @@ final class Boot extends BaseBoot
 
     public function __construct()
     {
-        $this->debug(config('app.debug', false));
         $this->envLoader();
+        $this->debug(config('app.debug', false));
         $this->request = new Request();
     }
 

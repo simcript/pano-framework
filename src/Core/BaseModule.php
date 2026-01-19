@@ -16,20 +16,25 @@ abstract readonly class BaseModule
     {
     }
 
-    protected function viewBasePath(): string
+    protected function viewPath(): string
     {
-        return $this->moduleBasePath() . DIRECTORY_SEPARATOR . 'Views' . DIRECTORY_SEPARATOR;
+        return $this->path('Views');
     }
 
-    protected function logsBasePath(): string
+    protected function filePath(): string
     {
-        return $this->moduleBasePath() . DIRECTORY_SEPARATOR . 'Logs' . DIRECTORY_SEPARATOR;
+        return $this->path('Files');
     }
 
-    public function moduleBasePath(): string
+    protected function logPath(): string
+    {
+        return $this->path('Logs');
+    }
+
+    public function path(string $path = ''): string
     {
         $reflector = new \ReflectionClass(static::class);
 
-        return dirname($reflector->getFileName());
+        return dirname($reflector->getFileName()) . DIRECTORY_SEPARATOR . $path;
     }
 }

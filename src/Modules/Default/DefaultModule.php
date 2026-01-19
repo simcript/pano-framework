@@ -15,12 +15,12 @@ final readonly class DefaultModule extends BaseModule
 {
     protected function view(): BaseView
     {
-        return new View($this->viewBasePath());
+        return new View($this->viewPath());
     }
 
     protected function log(): BaseLogger
     {
-        return new Logger($this->logsBasePath());
+        return new Logger($this->logPath());
     }
 
     public function routes(): BaseRouter

@@ -8,6 +8,22 @@ if (!function_exists('dd')) {
     }
 }
 
+if (!function_exists('url')) {
+    function url(string $path): string
+    {
+        return trim(config('app.url'), '/') . '/' . $path;
+    }
+}
+
+if (!function_exists('env')) {
+
+    function env(string $key, mixed $default = null): mixed
+    {
+        return $_ENV[$key]
+            ?? $_SERVER[$key]
+            ?? $default;
+    }
+}
 if (!function_exists('config')) {
 
     function config(string $key, mixed $default = null): mixed
