@@ -71,10 +71,25 @@ abstract class BaseRouter
         $path = $path === '/' ? '/' : rtrim($path, '/');
 
         $pattern = preg_replace_callback(
-            '/\[([a-zA-Z_][a-zA-Z0-9_]*)\]/',
+            '/\/?\[([a-zA-Z_][a-zA-Z0-9_]*)([\?\*])?\]/',
             function ($m) use (&$params) {
-                $params[] = $m[1];
-                return '(?P<' . $m[1] . '>[^/]+)';
+                $name = $m[1];
+                $flag = $m[2] ?? null;
+
+                $params[] = $name;
+
+                // catch-all param [param*]
+                if ($flag === '*') {
+                    return '(?:/(?P<' . $name . '>.+))?';
+                }
+
+                // optional param [param?]
+                if ($flag === '?') {
+                    return '(?:/(?P<' . $name . '>[^/]+))?';
+                }
+
+                // required param [param]
+                return '/(?P<' . $name . '>[^/]+)';
             },
             $path
         );
