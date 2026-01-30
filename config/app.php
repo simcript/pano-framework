@@ -5,5 +5,5 @@ return [
     'key' => env('APP_KEY',  null),
     'debug' => env('APP_DEBUG',  false),
     'url' => env('APP_URL',  null),
-    'resolver' => env('DOMAIN_RESOLVER',  'path'),
+    'resolver' => env('MODULE_RESOLVER',  'path'),
 ];

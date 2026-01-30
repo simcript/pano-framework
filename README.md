@@ -206,7 +206,7 @@ APP_ENV=local
 APP_KEY=Iur5UWL6KVz/2jsJTfjF+YbzAmnvejpIfYWo0fzZ8Mg=
 APP_DEBUG=true
 APP_URL=https://neda.tst
-DOMAIN_RESOLVER=path #path or subdomain
+MODULE_RESOLVER=path #path or subdomain
 ```
 
 The parser is minimal by design and intended for basic configuration only.
