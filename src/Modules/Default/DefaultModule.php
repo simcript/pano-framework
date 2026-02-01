@@ -10,9 +10,25 @@ use Pano\Core\BaseView;
 use Pano\Foundation\Logger;
 use Pano\Foundation\Router;
 use Pano\Foundation\View;
+use Pano\Modules\Default\Commands\DefaultCommand;
 
 final readonly class DefaultModule extends BaseModule
 {
+    public function routes(): BaseRouter
+    {
+        $router = new Router($this->request);
+        $router->get('/', fn() => $this->info());
+
+        return $router;
+    }
+
+    public function commands(): array
+    {
+        return [
+            'app:info' => DefaultCommand::class
+        ];
+    }
+
     protected function view(): BaseView
     {
         return new View($this->viewPath());
@@ -23,15 +39,7 @@ final readonly class DefaultModule extends BaseModule
         return new Logger($this->logPath());
     }
 
-    public function routes(): BaseRouter
-    {
-        $router = new Router($this->request);
-        $router->get('/', fn() => $this->info());
-
-        return $router;
-    }
-
-    public function info(): void
+    protected function info(): void
     {
         $this->view()
             ->with(['name' => 'Pano'])

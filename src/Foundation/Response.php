@@ -2,6 +2,7 @@
 
 namespace Pano\Foundation;
 
+use Pano\Core\BaseRequest;
 use Pano\Core\BaseResponse;
 use Pano\Core\BaseException;
 use Pano\Enum\HttpStatus;
@@ -72,7 +73,7 @@ final class Response extends BaseResponse
 
     public static function exception(
         \Throwable $e,
-        Request $request
+        BaseRequest $request
     ): self {
         $debug = config('app.debug', false);
 

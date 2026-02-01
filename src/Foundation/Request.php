@@ -6,12 +6,12 @@ use Pano\Core\BaseRequest;
 
 final class Request extends BaseRequest
 {
-    public function __construct()
+    public function __construct(array $data)
     {
-        $this->fetchMethod($_SERVER)
-            ->fetchQuery($_SERVER)
-            ->fetchHost($_SERVER)
-            ->fetchSegments($_SERVER)
+        $this->fetchMethod($data)
+            ->fetchQuery($data)
+            ->fetchHost($data)
+            ->fetchSegments($data)
             ->fetchUrl()
             ->fetchData()
             ->fetchFiles()
@@ -62,7 +62,11 @@ final class Request extends BaseRequest
 
     private function fetchHeaders(): self
     {
-        $this->headers = getallheaders();
+        try {
+            $this->headers = getallheaders();
+        } catch (\Throwable $throwable) {
+            $this->headers = [];
+        }
         return $this;
     }
 
