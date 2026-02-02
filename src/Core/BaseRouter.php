@@ -20,6 +20,7 @@ abstract class BaseRouter
     protected BaseRequest $request;
 
     private array $routes = [];
+    private array $commands = [];
 
     public function __construct(BaseRequest $request)
     {
@@ -34,34 +35,46 @@ abstract class BaseRouter
 
         $this->routes[$method->value][] = [
             'pattern' => $pattern,
-            'params'  => $params,
+            'params' => $params,
             'handler' => $handler,
         ];
     }
 
+    public function command(string $path, string $commandClass): void
+    {
+        $this->commands[$path] = $commandClass;
+    }
 
     public function dispatch(): mixed
     {
         $method = $this->request->getMethod();
-        $uri    = $this->normalizeUri($this->request->getUrl());
-
-        if (!isset($this->routes[$method])) {
+        if ($method === HttpMethod::CLI) {
+            $commandClass = $this->commands[$this->request->getUrl()] ?? null;
+            if (!class_exists($commandClass)) {
+                return $this->notFound();
+            }
+            $commandClass = (new $commandClass($this->request));
+            if ($commandClass instanceof BaseCommand) {
+                return $commandClass->handle();
+            } else {
+                return $this->notFound();
+            }
+        } else {
+            $uri = $this->normalizeUri($this->request->getUrl());
+            if (!isset($this->routes[$method->value])) {
+                return $this->notFound();
+            }
+            foreach ($this->routes[$method->value] as $route) {
+                if (preg_match($route['pattern'], $uri, $matches)) {
+                    $args = [];
+                    foreach ($route['params'] as $name) {
+                        $args[] = $matches[$name];
+                    }
+                    return ($route['handler'])(...$args);
+                }
+            }
             return $this->notFound();
         }
-
-        foreach ($this->routes[$method] as $route) {
-            if (preg_match($route['pattern'], $uri, $matches)) {
-
-                $args = [];
-                foreach ($route['params'] as $name) {
-                    $args[] = $matches[$name];
-                }
-
-                return ($route['handler'])(...$args);
-            }
-        }
-
-        return $this->notFound();
     }
 
     protected function compile(string $path): array

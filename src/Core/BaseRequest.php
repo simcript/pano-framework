@@ -2,13 +2,15 @@
 
 namespace Pano\Core;
 
+use Pano\Enum\HttpMethod;
+
 abstract class BaseRequest
 {
     protected string|array $data;
     protected array $files;
     protected array $headers;
     protected array $queries;
-    protected string $method;
+    protected HttpMethod $method;
     protected string $query;
     protected string $url;
     protected array $segments;
@@ -34,7 +36,7 @@ abstract class BaseRequest
         return $this->queries;
     }
 
-    public function getMethod(): string
+    public function getMethod(): HttpMethod
     {
         return $this->method;
     }

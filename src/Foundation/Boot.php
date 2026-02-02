@@ -18,22 +18,21 @@ final class Boot extends BaseBoot
     public function run(): void
     {
         $this->request = new Request($_SERVER);
-        try {
-            $moduleClass = $this->getModule($this->request->getModule());
-            $module = $moduleClass->newInstance($this->request);
-            $module->routes()->dispatch();
-        } catch (\Throwable $e) {
-            Response::exception($e, $this->request)->send();
-        }
+        $this->dispatcher();
     }
 
     public function cli(array $arguments): void
     {
         $this->request = new CLIRequest($arguments);
+        $this->dispatcher();
+    }
+
+    private function dispatcher(): void
+    {
         try {
             $moduleClass = $this->getModule($this->request->getModule());
             $module = $moduleClass->newInstance($this->request);
-            $module->command()->handle();
+            $module->routes()->dispatch();
         } catch (\Throwable $e) {
             Response::exception($e, $this->request)->send();
         }

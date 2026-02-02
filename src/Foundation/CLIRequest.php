@@ -3,6 +3,7 @@
 namespace Pano\Foundation;
 
 use Pano\Core\BaseRequest;
+use Pano\Enum\HttpMethod;
 
 final class CLIRequest extends BaseRequest
 {
@@ -50,7 +51,7 @@ final class CLIRequest extends BaseRequest
 
     private function fetchMethod(): self
     {
-        $this->method = 'CLI';
+        $this->method = HttpMethod::CLI;
         return $this;
     }
 

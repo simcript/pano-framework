@@ -3,16 +3,17 @@
 namespace Pano\Core;
 
 use Pano\Enum\HttpStatus;
+use Pano\Enum\ResultCode;
 
 abstract class BaseResponse
 {
     abstract public function send(): void;
 
-    protected HttpStatus $status = HttpStatus::OK;
+    protected HttpStatus|ResultCode $status = HttpStatus::OK;
     protected array $headers = [];
     protected mixed $body = null;
 
-    public function setStatus(HttpStatus $status): self
+    public function setStatus(HttpStatus|ResultCode $status): self
     {
         $this->status = $status;
         return $this;

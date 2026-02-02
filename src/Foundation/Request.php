@@ -3,6 +3,7 @@
 namespace Pano\Foundation;
 
 use Pano\Core\BaseRequest;
+use Pano\Enum\HttpMethod;
 
 final class Request extends BaseRequest
 {
@@ -72,7 +73,9 @@ final class Request extends BaseRequest
 
     private function fetchMethod(array $info): self
     {
-        $this->method = $info['REQUEST_METHOD'] ?? 'GET';
+        $method = $info['REQUEST_METHOD'] ?? 'GET';
+        $this->method = HttpMethod::tryFrom($method) ?? HTTPMethod::GET;
+
         return $this;
     }
 

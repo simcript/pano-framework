@@ -8,7 +8,6 @@ use Pano\Core\BaseModule;
 use Pano\Core\BaseRouter;
 use Pano\Core\BaseView;
 use Pano\Foundation\Logger;
-use Pano\Foundation\Router;
 use Pano\Foundation\View;
 use Pano\Modules\Default\Commands\DefaultCommand;
 
@@ -16,17 +15,10 @@ final readonly class DefaultModule extends BaseModule
 {
     public function routes(): BaseRouter
     {
-        $router = new Router($this->request);
-        $router->get('/', fn() => $this->info());
+        $this->router->get('/', fn() => $this->info());
+        $this->router->command('app:info', DefaultCommand::class);
 
-        return $router;
-    }
-
-    public function commands(): array
-    {
-        return [
-            'app:info' => DefaultCommand::class
-        ];
+        return $this->router;
     }
 
     protected function view(): BaseView

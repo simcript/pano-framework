@@ -31,6 +31,10 @@ final class Router extends BaseRouter
 
     protected function notFound(): mixed
     {
+        if (HttpMethod::CLI === $this->request->getMethod()) {
+            throw new Exception('Command not found', 404, HttpStatus::NOT_FOUND);
+        }
+
         throw new Exception('Route not found', 404, HttpStatus::NOT_FOUND);
     }
 

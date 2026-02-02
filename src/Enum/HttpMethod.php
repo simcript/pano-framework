@@ -33,6 +33,9 @@ enum HttpMethod: string
     case LINK  = 'LINK';      // Rare but valid
     case UNLINK = 'UNLINK';
 
+    // For cli commands
+    case CLI = 'CLI';
+
     /**
      * Create enum from raw string (case-insensitive)
      */

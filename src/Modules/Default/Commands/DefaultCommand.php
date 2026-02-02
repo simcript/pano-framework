@@ -11,6 +11,6 @@ class DefaultCommand extends BaseCommand
     public function handle(): ResultCode
     {
         $this->info(env('APP_NAME', 'Pano'));
-        return ResultCode::SUCCESS;
+        return ResultCode::OK;
     }
 }

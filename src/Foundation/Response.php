@@ -5,7 +5,9 @@ namespace Pano\Foundation;
 use Pano\Core\BaseRequest;
 use Pano\Core\BaseResponse;
 use Pano\Core\BaseException;
+use Pano\Enum\HttpMethod;
 use Pano\Enum\HttpStatus;
+use Pano\Enum\ResultCode;
 
 final class Response extends BaseResponse
 {
@@ -71,6 +73,16 @@ final class Response extends BaseResponse
             ->setBody($callback);
     }
 
+    public static function terminal(
+        string $text,
+        ResultCode $status = ResultCode::OK
+    ): self {
+        $text = $status === ResultCode::OK ? "\033[32m$text\033[0m\n" : "\033[31m$text\033[0m\n";
+        return (new self())
+            ->setStatus($status)
+            ->setBody($text);
+    }
+
     public static function exception(
         \Throwable $e,
         BaseRequest $request
@@ -78,6 +90,10 @@ final class Response extends BaseResponse
         $debug = config('app.debug', false);
 
         if ($e instanceof BaseException) {
+
+            if ($request->getMethod() === HttpMethod::CLI) {
+                return self::terminal($e->getMessage(), ResultCode::ERROR);
+            }
 
             if ($request->expectsJson()) {
                 return self::json(
@@ -104,16 +120,18 @@ final class Response extends BaseResponse
             return;
         }
 
-        http_response_code($this->status->value);
+        if ($this->status instanceof HttpStatus) {
+            http_response_code($this->status->value);
 
-        foreach ($this->headers as $key => $value) {
-            header("$key: $value", true);
+            foreach ($this->headers as $key => $value) {
+                header("$key: $value", true);
+            }
         }
 
         if (is_callable($this->body)) {
             ($this->body)();
         } else {
-            echo (string) $this->body;
+            echo $this->body;
         }
 
         $this->sent = true;
