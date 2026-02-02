@@ -17,7 +17,7 @@ final class CLIRequest extends BaseRequest
             ->fetchCommand()
             ->fetchPositional($data)
             ->fetchFiles()
-            ->fetchHeaders();
+            ->fetchQueries();
     }
 
     public function getModule(): string
@@ -31,7 +31,7 @@ final class CLIRequest extends BaseRequest
 
     public function getOptions(): array
     {
-        return $this->queries;
+        return $this->headers;
     }
 
     public function getCommand(): string
@@ -74,7 +74,7 @@ final class CLIRequest extends BaseRequest
                 }
             }
         }
-        $this->queries = $parameters;
+        $this->headers = $parameters;
         return $this;
     }
 
@@ -118,9 +118,9 @@ final class CLIRequest extends BaseRequest
         return $this;
     }
 
-    private function fetchHeaders(): void
+    private function fetchQueries(): void
     {
-        $this->headers = [];
+        $this->queries = [];
     }
 
 

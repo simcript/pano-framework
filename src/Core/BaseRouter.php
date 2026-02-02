@@ -40,9 +40,9 @@ abstract class BaseRouter
         ];
     }
 
-    public function command(string $path, string $commandClass): void
+    public function command(string $path, string $class): void
     {
-        $this->commands[$path] = $commandClass;
+        $this->commands[$path] = $class;
     }
 
     public function dispatch(): mixed
