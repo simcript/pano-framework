@@ -8,9 +8,9 @@ abstract readonly class BaseModule
 {
     abstract protected function routes(): BaseRouter;
 
-    abstract protected function view(): BaseView;
+    abstract public function view(): BaseView;
 
-    abstract protected function log(): BaseLogger;
+    abstract public function log(): BaseLogger;
 
     protected BaseRouter $router;
 
@@ -18,7 +18,7 @@ abstract readonly class BaseModule
         protected BaseRequest $request
     )
     {
-        $this->router = new Router($this->request);
+        $this->router = new Router($this->request, $this);
     }
 
     protected function viewPath(): string

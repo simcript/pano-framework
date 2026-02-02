@@ -2,33 +2,59 @@
 
 namespace Pano\Core;
 
+use Exception;
 use Pano\Enum\HttpMethod;
+use ReflectionClass;
 
 abstract class BaseRouter
 {
 
-    abstract public function get(string $path, callable $handler): void;
+    abstract public function get(string $path, string $class, string $action): void;
 
-    abstract public function post(string $path, callable $handler): void;
+    abstract public function post(string $path, string $class, string $action): void;
 
-    abstract public function put(string $path, callable $handler): void;
+    abstract public function put(string $path, string $class, string $action): void;
 
-    abstract public function delete(string $path, callable $handler): void;
+    abstract public function delete(string $path, string $class, string $action): void;
 
     abstract protected function notFound(): mixed;
 
     protected BaseRequest $request;
+    protected BaseModule $module;
 
     private array $routes = [];
     private array $commands = [];
 
-    public function __construct(BaseRequest $request)
+    public function __construct(BaseRequest $request, BaseModule $module)
     {
         $this->request = $request;
+        $this->module = $module;
     }
 
-    protected function register(HttpMethod $method, string $path, callable $handler): void
+    /**
+     * @throws Exception
+     */
+    protected function register(HttpMethod $method, string $path, string $class, string $action): void
     {
+
+        if (!class_exists($class)) {
+            throw new Exception("Handler ($class) not found");
+        }
+
+        $reflection = new ReflectionClass($class);
+
+        if (!$reflection->isSubclassOf(BaseHandler::class)) {
+            throw new Exception("Handler ($class) must extend " . BaseHandler::class);
+        }
+
+        if (!$reflection->hasMethod($action)) {
+            throw new Exception("Action method $action is not defined in handler $class");
+        }
+
+        if (!$reflection->getMethod($action)->isPublic()) {
+            throw new Exception("Action method $action exists in handler $class but is not public");
+        }
+
         $path = trim($path, '/') . '/';
 
         [$pattern, $params] = $this->compile($path);
@@ -36,7 +62,7 @@ abstract class BaseRouter
         $this->routes[$method->value][] = [
             'pattern' => $pattern,
             'params' => $params,
-            'handler' => $handler,
+            'handler' => [$class, $action],
         ];
     }
 
@@ -70,7 +96,8 @@ abstract class BaseRouter
                     foreach ($route['params'] as $name) {
                         $args[] = $matches[$name];
                     }
-                    return ($route['handler'])(...$args);
+
+                    return (new $route['handler'][0]($this->request, $this->module))->{$route['handler'][1]}(...$args);
                 }
             }
             return $this->notFound();

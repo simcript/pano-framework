@@ -15,27 +15,20 @@ final readonly class DefaultModule extends BaseModule
 {
     public function routes(): BaseRouter
     {
-        $this->router->get('/', fn() => $this->info());
+        $this->router->get('/', DefaultHandler::class, 'info');
         $this->router->command('app:info', DefaultCommand::class);
 
         return $this->router;
     }
 
-    protected function view(): BaseView
+    public function view(): BaseView
     {
         return new View($this->viewPath());
     }
 
-    protected function log(): BaseLogger
+    public function log(): BaseLogger
     {
         return new Logger($this->logPath());
     }
 
-    protected function info(): void
-    {
-        $this->view()
-            ->with(['name' => 'Pano'])
-            ->layout('layout')
-            ->render('home');
-    }
 }

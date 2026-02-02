@@ -9,26 +9,41 @@ use Pano\Enum\HttpStatus;
 final class Router extends BaseRouter
 {
 
-    public function get(string $path, callable $handler): void
+    /**
+     * @throws \Exception
+     */
+    public function get(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::GET, $path, $handler);
+        $this->register(HttpMethod::GET, $path, $class, $action);
     }
 
-    public function post(string $path, callable $handler): void
+    /**
+     * @throws \Exception
+     */
+    public function post(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::POST, $path, $handler);
+        $this->register(HttpMethod::POST, $path, $class, $action);
     }
 
-    public function put(string $path, callable $handler): void
+    /**
+     * @throws \Exception
+     */
+    public function put(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::PUT, $path, $handler);
+        $this->register(HttpMethod::PUT, $path, $class, $action);
     }
 
-    public function delete(string $path, callable $handler): void
+    /**
+     * @throws \Exception
+     */
+    public function delete(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::DELETE, $path, $handler);
+        $this->register(HttpMethod::DELETE, $path, $class, $action);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function notFound(): mixed
     {
         if (HttpMethod::CLI === $this->request->getMethod()) {
