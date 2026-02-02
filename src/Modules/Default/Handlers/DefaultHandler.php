@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Pano\Modules\Default;
+namespace Pano\Modules\Default\Handlers;
 
 use Pano\Core\BaseHandler;
 

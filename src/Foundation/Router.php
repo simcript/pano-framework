@@ -10,35 +10,51 @@ final class Router extends BaseRouter
 {
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function get(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::GET, $path, $class, $action);
+        try {
+            $this->register(HttpMethod::GET, $path, $class, $action);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function post(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::POST, $path, $class, $action);
+        try {
+            $this->register(HttpMethod::POST, $path, $class, $action);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function put(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::PUT, $path, $class, $action);
+        try {
+            $this->register(HttpMethod::PUT, $path, $class, $action);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function delete(string $path, string $class, string $action): void
     {
-        $this->register(HttpMethod::DELETE, $path, $class, $action);
+        try {
+            $this->register(HttpMethod::DELETE, $path, $class, $action);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
