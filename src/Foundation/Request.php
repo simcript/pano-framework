@@ -17,6 +17,9 @@ final class Request extends BaseRequest
             ->fetchData()
             ->fetchFiles()
             ->fetchHeaders();
+
+        /** @var Bag $attributes */
+        $this->attributes = new Bag();
     }
 
     public function getModule(): string

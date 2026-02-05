@@ -17,12 +17,14 @@ final class Boot extends BaseBoot
 
     public function run(): void
     {
+        /** @var Request $request */
         $this->request = new Request($_SERVER);
         $this->dispatcher();
     }
 
     public function cli(array $arguments): void
     {
+        /** @var CLIRequest $request */
         $this->request = new CLIRequest($arguments);
         $this->dispatcher();
     }
