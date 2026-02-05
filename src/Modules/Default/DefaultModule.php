@@ -12,6 +12,7 @@ use Pano\Foundation\Logger;
 use Pano\Foundation\View;
 use Pano\Modules\Default\Commands\DefaultCommand;
 use Pano\Modules\Default\Handlers\DefaultHandler;
+use Pano\Modules\Default\Interceptors\DefaultInterceptor;
 
 final readonly class DefaultModule extends BaseModule
 {
@@ -20,7 +21,7 @@ final readonly class DefaultModule extends BaseModule
      */
     public function routes(): BaseRouter
     {
-        $this->router->get('/', DefaultHandler::class, 'info');
+        $this->router->get('/', DefaultHandler::class, 'info', [DefaultInterceptor::class]);
         $this->router->command('app:info', DefaultCommand::class);
 
         return $this->router;

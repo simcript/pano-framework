@@ -30,31 +30,24 @@ final class Boot extends BaseBoot
     private function dispatcher(): void
     {
         try {
-            $moduleClass = $this->getModule($this->request->getModule());
-            $module = $moduleClass->newInstance($this->request);
+            $module = $this->request->getModule();
+
+            $moduleName = config('modules.' . $module, null);
+            if ($moduleName === null) {
+                throw new Exception("Module ({$module}) is not defined");
+            }
+            if (!class_exists($moduleName)) {
+                throw new Exception("Module class ($moduleName) not found");
+            }
+            $reflection = new ReflectionClass($moduleName);
+            if (!$reflection->isSubclassOf(BaseModule::class)) {
+                throw new Exception("Module ($moduleName) must extend " . BaseModule::class);
+            }
+            $module = $reflection->newInstance($this->request);
             $module->routes()->dispatch();
         } catch (\Throwable $e) {
             Response::exception($e, $this->request)->send();
         }
     }
 
-    /**
-     * @throws Exception
-     */
-    private function getModule(string $module): ReflectionClass
-    {
-        $moduleName = config('modules.' . $module, null);
-        if ($moduleName === null) {
-            throw new Exception("Module ({$module}) is not defined");
-        }
-        if (!class_exists($moduleName)) {
-            throw new Exception("Module class ($moduleName) not found");
-        }
-        $reflection = new ReflectionClass($moduleName);
-        if (!$reflection->isSubclassOf(BaseModule::class)) {
-            throw new Exception("Module ($moduleName) must extend " . BaseModule::class);
-        }
-
-        return $reflection;
-    }
 }

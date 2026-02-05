@@ -10,48 +10,64 @@ final class Router extends BaseRouter
 {
 
     /**
+     * @param string $path
+     * @param string $class
+     * @param string $action
+     * @param array $interceptors
      * @throws Exception
      */
-    public function get(string $path, string $class, string $action): void
+    public function get(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::GET, $path, $class, $action);
+            $this->register(HttpMethod::GET, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
+     * @param string $path
+     * @param string $class
+     * @param string $action
+     * @param array $interceptors
      * @throws Exception
      */
-    public function post(string $path, string $class, string $action): void
+    public function post(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::POST, $path, $class, $action);
+            $this->register(HttpMethod::POST, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
+     * @param string $path
+     * @param string $class
+     * @param string $action
+     * @param array $interceptors
      * @throws Exception
      */
-    public function put(string $path, string $class, string $action): void
+    public function put(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::PUT, $path, $class, $action);
+            $this->register(HttpMethod::PUT, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
+     * @param string $path
+     * @param string $class
+     * @param string $action
+     * @param array $interceptors
      * @throws Exception
      */
-    public function delete(string $path, string $class, string $action): void
+    public function delete(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::DELETE, $path, $class, $action);
+            $this->register(HttpMethod::DELETE, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
         }

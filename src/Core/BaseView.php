@@ -27,7 +27,7 @@ abstract class BaseView
         return $this;
     }
 
-    public function render(string $view): void
+    public function render(string $view): string
     {
         extract($this->data, EXTR_SKIP);
 
@@ -37,11 +37,12 @@ abstract class BaseView
 
         if ($this->layout) {
             $this->sections['content'] = $content;
+            ob_start();
             require $this->resolve($this->layout);
-            return;
+            $content = ob_get_clean();
         }
 
-        echo $content;
+        return $content;
     }
 
     protected function resolve(string $view): string
