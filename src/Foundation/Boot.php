@@ -46,7 +46,7 @@ final class Boot extends BaseBoot
                 throw new Exception("Module ($moduleName) must extend " . BaseModule::class);
             }
             $module = $reflection->newInstance($this->request);
-            $module->routes()->dispatch();
+            $module->routes()->handle();
         } catch (\Throwable $e) {
             Response::exception($e, $this->request)->send();
         }

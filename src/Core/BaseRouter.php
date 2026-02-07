@@ -32,72 +32,39 @@ abstract class BaseRouter
         $this->module = $module;
     }
 
-    public function command(string $path, string $class): void
-    {
-        $this->commands[$path] = $class;
-    }
-
-    public function dispatch(): mixed
-    {
-        $method = $this->request->getMethod();
-        if ($method === HttpMethod::CLI) {
-            $commandClass = $this->commands[$this->request->getUrl()] ?? null;
-            if (!class_exists($commandClass)) {
-                return $this->notFound();
-            }
-            $commandClass = (new $commandClass($this->request));
-            if ($commandClass instanceof BaseCommand) {
-                return $commandClass->handle();
-            } else {
-                return $this->notFound();
-            }
-        } else {
-            $uri = $this->normalizeUri($this->request->getUrl());
-            if (!isset($this->routes[$method->value])) {
-                return $this->notFound();
-            }
-
-            foreach ($this->routes[$method->value] as $route) {
-
-                if (preg_match($route['pattern'], $uri, $matches)) {
-
-                    $args = [];
-                    foreach ($route['params'] as $name) {
-                        $args[] = $matches[$name];
-                    }
-
-                    // instantiate interceptors
-                    $interceptors = [];
-                    foreach ($route['interceptors'] as $interceptorClass) {
-                        $interceptors[] = new $interceptorClass($this->request);
-                    }
-
-                    // BEFORE
-                    foreach ($interceptors as $interceptor) {
-                        $interceptor->onRequest();
-                        $this->request = $interceptor->request;
-                    }
-
-                    // HANDLER
-                    $handler = new $route['handler'][0]($this->request, $this->module);
-
-                    $response = $handler->{$route['handler'][1]}(...$args);
-                    // AFTER (reverse order like Laravel)
-                    foreach (array_reverse($interceptors) as $interceptor) {
-                        $response = $interceptor->onResponse($response);
-                    }
-
-                    return $response->send();
-                }
-            }
-
-            return $this->notFound();
-        }
-    }
-
     /**
      * @throws Exception
      */
+    public function command(string $path, string $class): void
+    {
+        if (!class_exists($class)) {
+            throw new Exception("Command ($class) not found");
+        }
+
+        $reflection = new ReflectionClass($class);
+        if (!$reflection->isSubclassOf(BaseCommand::class)) {
+            throw new Exception("Command ($class) must extend " . BaseCommand::class);
+        }
+
+        $path = trim($path, '/') . '/';
+        [$pattern, $params, $options] = $this->compile($path);
+
+        $this->commands[] = [
+            'command' => explode('/', $path)[0],
+            'pattern' => $pattern,
+            'params'  => $params,
+            'options'  => $options,
+            'handler' => $class,
+        ];
+    }
+
+    public function handle(): mixed
+    {
+        return ($this->request->getMethod() === HttpMethod::CLI)
+            ? $this->dispatchConsole()
+            : $this->dispatchHttp();
+    }
+
     protected function register(
         HttpMethod $method,
         string     $path,
@@ -114,7 +81,7 @@ abstract class BaseRouter
 
         $path = trim($path, '/') . '/';
 
-        [$pattern, $params] = $this->compile($path);
+        [$pattern, $params, $options] = $this->compile($path);
         foreach ($interceptors as $interceptor) {
             $reflection = new ReflectionClass($interceptor);
             if (!$reflection->isSubclassOf(BaseInterceptor::class)) {
@@ -124,6 +91,7 @@ abstract class BaseRouter
         $this->routes[$method->value][] = [
             'pattern' => $pattern,
             'params' => $params,
+            'options' => $options,
             'handler' => [$class, $action],
             'interceptors' => $interceptors,
         ];
@@ -132,12 +100,13 @@ abstract class BaseRouter
     protected function compile(string $path): array
     {
         $params = [];
+        $options = [];
 
         $path = $path === '/' ? '/' : rtrim($path, '/');
 
         $pattern = preg_replace_callback(
             '/\/?\[([a-zA-Z_][a-zA-Z0-9_]*)([\?\*])?\]/',
-            function ($m) use (&$params) {
+            function ($m) use (&$params, &$options) {
                 $name = $m[1];
                 $flag = $m[2] ?? null;
 
@@ -150,6 +119,7 @@ abstract class BaseRouter
 
                 // optional param [param?]
                 if ($flag === '?') {
+                    $options[] = $name;
                     return '(?:/(?P<' . $name . '>[^/]+))?';
                 }
 
@@ -161,7 +131,8 @@ abstract class BaseRouter
 
         return [
             '#^' . $pattern . '$#',
-            $params
+            $params,
+            $options
         ];
     }
 
@@ -212,6 +183,79 @@ abstract class BaseRouter
                 );
             }
         }
+
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function dispatchConsole(): mixed
+    {
+        $options = $this->request->getHeaders();
+        $positional = $this->request->getData();
+        foreach ($this->commands as $command) {
+            if (str_ends_with($this->request->getHost(), $command['command'])) {
+                $params = [];
+                foreach ($command['params'] as $name) {
+                    $params[$name] = null;
+                }
+                foreach ($options as $key => $value) {
+                    $params[$key] = $value;
+                }
+                foreach ($command['params'] as $key => $name) {
+                    if (in_array($name, $command['options'])){
+                        continue;
+                    } else if (isset($positional[$key])) {
+                        $params[$name] = $positional[$key];
+                    } else {
+                        throw new \Exception("Parameter '$name' is required");
+                    }
+                }
+                if (preg_match($command['pattern'], $this->request->getUrl()) !== 1) {
+                    continue;
+                }
+
+                return (new $command['handler']($this->request))->handle($params);
+            }
+        }
+
+        return $this->notFound();
+    }
+
+    private function dispatchHttp(): mixed
+    {
+        $method = $this->request->getMethod();
+        $uri = $this->normalizeUri($this->request->getUrl());
+        if (!isset($this->routes[$method->value])) {
+            return $this->notFound();
+        }
+
+        foreach ($this->routes[$method->value] as $route) {
+            if (preg_match($route['pattern'], $uri, $matches)) {
+                $args = [];
+                $interceptors = [];
+
+                foreach ($route['params'] as $name) {
+                    $args[] = $matches[$name];
+                }
+                foreach ($route['interceptors'] as $interceptorClass) {
+                    $interceptors[] = new $interceptorClass($this->request);
+                }
+                foreach ($interceptors as $interceptor) {
+                    $interceptor->onRequest();
+                    $this->request = $interceptor->request;
+                }
+                $handler = new $route['handler'][0]($this->request, $this->module);
+                $response = $handler->{$route['handler'][1]}(...$args);
+                foreach (array_reverse($interceptors) as $interceptor) {
+                    $response = $interceptor->onResponse($response);
+                }
+
+                return $response->send();
+            }
+        }
+
+        return $this->notFound();
 
     }
 }

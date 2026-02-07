@@ -10,7 +10,7 @@ abstract class BaseCommand
     {
     }
 
-    abstract public function handle(): ResultCode;
+    abstract public function handle(array $arguments): ResultCode;
 
     protected function info(string $text): void
     {

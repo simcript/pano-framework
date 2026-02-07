@@ -42,4 +42,9 @@ abstract readonly class BaseModule
 
         return dirname($reflector->getFileName()) . DIRECTORY_SEPARATOR . $path;
     }
+
+    public function name(): string
+    {
+        return (new \ReflectionClass($this))->getShortName();
+    }
 }

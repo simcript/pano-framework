@@ -14,8 +14,8 @@ final class CLIRequest extends BaseRequest
             ->fetchOptions($data)
             ->fetchPath($data)
             ->fetchSegments($data)
-            ->fetchCommand()
             ->fetchPositional($data)
+            ->fetchCommand()
             ->fetchFiles()
             ->fetchQueries();
     }
@@ -80,7 +80,7 @@ final class CLIRequest extends BaseRequest
 
     private function fetchPath(array $data): self
     {
-        $this->host = $data[0] . ' ' . $data[1];
+        $this->host = $data[1];
         return $this;
     }
 
@@ -92,9 +92,14 @@ final class CLIRequest extends BaseRequest
 
     private function fetchCommand(): self
     {
-        $uriSections = $this->segments;
-        unset($uriSections[0]);
-        $this->url = $uriSections[1];
+        $url = $this->segments[1];
+        foreach ($this->data as $item) {
+            $url .= ' ' . $item;
+        }
+        foreach ($this->headers as $key => $item) {
+            $url .= " --$key=" . $item;
+        }
+        $this->url = str_replace(' ', '/', $url);
         return $this;
     }
 
@@ -103,6 +108,7 @@ final class CLIRequest extends BaseRequest
      */
     private function fetchPositional(array $data): self
     {
+        $this->data = [];
         $arguments = array_slice($data, 2);
         foreach ($arguments as $argument) {
             if (!str_starts_with($argument, '--')) {
