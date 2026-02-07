@@ -3,8 +3,46 @@
 if (!function_exists('dd')) {
     function dd(...$args): void
     {
-        highlight_string("<?php\n" . var_export($args, true) . ";\n?>");
-        exit();
+        $isCli = PHP_SAPI === 'cli';
+
+        if ($isCli) {
+            // ===== CLI OUTPUT =====
+            foreach ($args as $i => $arg) {
+                echo PHP_EOL;
+                echo "\033[1;36m══════════════════════════════════════\033[0m" . PHP_EOL;
+                echo "\033[1;33m[DATA {$i}]\033[0m" . PHP_EOL;
+                echo "\033[1;36m──────────────────────────────────────\033[0m" . PHP_EOL;
+
+                if (is_scalar($arg) || $arg === null) {
+                    var_dump($arg);
+                } else {
+                    print_r($arg);
+                }
+
+                echo "\033[1;36m══════════════════════════════════════\033[0m" . PHP_EOL;
+            }
+
+            exit(1);
+        }
+
+        // ===== WEB OUTPUT =====
+        echo '<pre style="
+            background:#111;
+            color:#eee;
+            padding:16px;
+            border-radius:8px;
+            font-size:14px;
+            line-height:1.5;
+            overflow:auto;
+        ">';
+
+        foreach ($args as $i => $arg) {
+            echo "<strong>DATA {$i}:</strong>\n";
+            echo htmlspecialchars(var_export($arg, true)) . "\n\n";
+        }
+
+        echo '</pre>';
+        exit;
     }
 }
 
