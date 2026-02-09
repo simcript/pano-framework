@@ -40,7 +40,7 @@ abstract readonly class BaseModule
     {
         $reflector = new \ReflectionClass(static::class);
 
-        return dirname($reflector->getFileName()) . DIRECTORY_SEPARATOR . $path;
+        return dirname($reflector->getFileName()) . DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR);
     }
 
     public function name(): string

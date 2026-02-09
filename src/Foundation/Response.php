@@ -73,6 +73,22 @@ final class Response extends BaseResponse
             ->setBody($callback);
     }
 
+    public static function redirect(
+        string $to,
+        HttpStatus $status = HttpStatus::FOUND,
+        array $headers = []
+    ): self {
+        return (new self())
+            ->setStatus($status)
+            ->setHeader('Location', $to)
+            ->setHeaders($headers)
+            ->setBody(
+                '<html><head><meta http-equiv="refresh" content="0;url=' .
+                htmlspecialchars($to, ENT_QUOTES) .
+                '"></head></html>'
+            );
+    }
+
     public static function terminal(
         string $text,
         ResultCode $status = ResultCode::OK

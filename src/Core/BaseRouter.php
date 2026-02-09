@@ -208,7 +208,7 @@ abstract class BaseRouter
                     } else if (isset($positional[$key])) {
                         $params[$name] = $positional[$key];
                     } else {
-                        throw new \Exception("Parameter '$name' is required");
+                        throw new Exception("Parameter '$name' is required");
                     }
                 }
                 if (preg_match($command['pattern'], $this->request->getUrl()) !== 1) {

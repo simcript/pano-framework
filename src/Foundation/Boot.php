@@ -36,7 +36,7 @@ final class Boot extends BaseBoot
 
             $moduleName = config('modules.' . $module, null);
             if ($moduleName === null) {
-                throw new Exception("Module ({$module}) is not defined");
+                throw new Exception("No module found for '$module'");
             }
             if (!class_exists($moduleName)) {
                 throw new Exception("Module class ($moduleName) not found");
