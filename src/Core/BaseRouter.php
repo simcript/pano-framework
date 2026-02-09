@@ -215,7 +215,7 @@ abstract class BaseRouter
                     continue;
                 }
 
-                return (new $command['handler']($this->request))->handle($params);
+                return (new $command['handler']($this->request, $this->module))->handle($params);
             }
         }
 

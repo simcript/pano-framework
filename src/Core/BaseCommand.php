@@ -6,8 +6,11 @@ use Pano\Enum\ResultCode;
 
 abstract class BaseCommand
 {
-    public function __construct(public readonly BaseRequest $request)
-    {
+
+    public function __construct(
+        public readonly BaseRequest $request,
+        public readonly BaseModule  $module
+    ){
     }
 
     abstract public function handle(array $arguments): ResultCode;
