@@ -1,242 +1,133 @@
-# [Pano](https://simcript.github.io/pano/)
-## PHP Nano Framework
+# Pano
 
-Pano is a **nano(very small) framework** designed around a single idea:
+Pano is a lightweight PHP nano-framework designed as a minimal execution foundation.
 
-> **Define clear execution contracts, then provide simple default implementations.**
-
-The framework is intentionally minimal and non-opinionated. It gives developers **structure without control**, and **contracts without restriction**.
+It provides a small, explicit runtime that allows developers to build any architecture on top of it.
 
 ---
 
-## Design Philosophy
+# What Pano Is
 
-Pano is built on these principles:
-
-* Absolute simplicity
-* No hidden magic
-* Full developer control
-* Clear and explicit execution flow
-
-Pano deliberately **does not provide**:
-
-* ❌ MVC controllers
-* ❌ A service container
-* ❌ Global middleware
-
-Instead, it provides:
-
-* ✅ Execution contracts (Core)
-* ✅ Stable default behavior (Foundation)
-* ✅ Module-centric architecture
+- a minimal execution foundation
+- a low-level runtime structure
+- a base for building custom frameworks
+- a modular PHP system
 
 ---
 
-## Core vs Foundation
+# What Pano Is NOT
 
-Pano separates **contracts** from **behavior**.
-
-### Core
-
-The **Core** contains only **abstract base classes**.
-
-These classes:
-
-* Define execution flow
-* Define method signatures
-* Define responsibilities
-* Act as **contracts**, not implementations
-
-All Core classes:
-
-* Are **abstract**
-* Use the `Base` prefix
-* Are safe and intended to be extended
-
-> Core classes describe *how the system works*, not *what it does*.
-
-### Foundation
-
-The **Foundation** contains **final, concrete implementations** built on top of Core contracts.
-
-These classes:
-
-* Implement Core behavior
-* Provide sensible defaults
-* Are production-ready
-* Can be replaced or ignored entirely
-
-> Foundation exists for convenience, not enforcement.
+- a full-stack framework
+- an opinionated application framework
+- a batteries-included ecosystem
+- a replacement for Laravel or similar frameworks
 
 ---
 
-## Directory Structure
+# When to Use Pano
+
+Use Pano when you need:
+
+- full control over application architecture
+- a custom framework design
+- a minimal runtime without imposed structure
+- a base layer for system-level design
+
+---
+
+# When NOT to Use Pano
+
+Avoid Pano if you need:
+
+- rapid application scaffolding
+- prebuilt authentication systems
+- ORM-driven development
+- convention-based frameworks
+- beginner-friendly structure
+
+---
+
+# Key Concepts
+
+Pano introduces a minimal set of runtime concepts:
+
+- Core
+- Foundation
+- Modules
+- Handlers
+- Interceptors
+
+These concepts are intentionally low-level and composable.
+
+---
+
+# Quick Start
+
+```bash
+composer install
+php -S localhost:8000
+```
+
+---
+
+# Minimal Example
+
+```php
+// bootstrap example (simplified)
+
+$app = new \Pano\Foundation\Boot();
+$app->run();
+```
+
+---
+
+# Project Structure
 
 ```text
 project/
-│── index.php
-└── Pano/
-    ├── Core/
-    │   ├── BaseBoot.php
-    │   ├── BaseModule.php
-    │   ├── BaseRequest.php
-    │   └── BaseResponse.php
-    │
-    └── Foundation/
-        ├── Boot.php
-        ├── Module.php
-        └── Request.php
+├── config
+├── src
+│   ├── Core
+│   ├── Enum
+│   ├── Foundation
+│   └── Modules
 ```
 
 ---
 
-## Entry Point
+# Documentation
 
-All application execution starts from a single entry point:
-
-```php
-(new \Pano\Foundation\Boot())->run();
-```
-
-You are free to replace `Foundation\Boot` with your own implementation.
+- MANIFESTO.md → philosophy and principles
+- ARCHITECTURE.md → system design and runtime model
 
 ---
 
-## BaseBoot (Core Contract)
+# Version Compatibility
 
-```php
-abstract class BaseBoot
-{
-    abstract public function run(): void;
-
-    protected BaseRequest $request;
-}
-```
-
-* `run()` defines the execution flow
-* Flow cannot be broken, only customized
+- PHP 8.x is the baseline runtime
+- Pano evolves conservatively to maintain stability
 
 ---
 
-## BaseModule (Core Contract)
+# Contribution
 
-```php
-abstract class BaseModule
-{
-    public function __construct(
-        protected BaseRequest $request
-    ) {}
+Before contributing:
 
-    abstract protected function routes(): BaseRouter;
-}
-```
-
-Modules:
-
-* Are the **main execution units**
-* Receive a Request object
-* Contain all business logic
-
-Routing, validation, auth, and responses are fully controlled by the developer.
+- read ARCHITECTURE.md
+- respect core boundaries
+- avoid introducing hidden behavior
+- keep runtime explicit and predictable
 
 ---
 
-## BaseRequest (Core Contract)
+# Status
 
-```php
-abstract class BaseRequest
-{
-    protected string|array $data;
-    protected array $files;
-    protected array $headers;
-    protected array $queries;
-    protected string $method;
-    protected string $query;
-    protected string $url;
-    protected array $segments;
-    protected string $host;
-}
-```
+Pano is a low-level framework foundation intended for advanced use cases.
 
-Advantages:
-
-* No direct access to superglobals
-* Predictable input
-* High testability
+You are free. Pano should never think or make decisions on behalf of developers.
 
 ---
 
-## BaseResponse (Core Contract)
+# License
 
-```php
-abstract class BaseResponse
-{
-    abstract public function send(): void;
-
-    protected int $status = 200;
-    protected array $headers = [];
-    protected mixed $body = null;
-}
-```
-
-* `send()` is a closed execution flow
----
-
-## Error Handling
-
-Error handling is intentionally simple.
-
-Developers may:
-
-* Catch exceptions inside Modules
-* Override `handleException()` in Boot
-* Introduce custom exception contracts
-
-No global error strategy is enforced.
-
----
-
-## Environment (.env)
-
-Pano supports a very simple `.env` file:
-
-```env
-APP_NAME=Pano
-APP_ENV=local
-APP_KEY=Iur5UWL6KVz/2jsJTfjF+YbzAmnvejpIfYWo0fzZ8Mg=
-APP_DEBUG=true
-APP_URL=https://neda.tst
-MODULE_RESOLVER=path #path or subdomain
-```
-
-The parser is minimal by design and intended for basic configuration only.
-
----
-
-## Suitable Use Cases
-
-✔ MVP projects
-✔ Small APIs
-✔ Internal tools
-✔ Personal frameworks
-✔ Learning projects
-
-❌ Large enterprise systems
-❌ Large teams with strict standards
-
----
-
-## Summary
-
-Pano is a framework that:
-
-* Separates **contracts** from **behavior**
-* Trusts developers over abstractions
-* Avoids magic and global state
-* Encourages clarity and ownership
-
-> *A framework should guide execution, not control it.*
-
----
-
-Built for developers who prefer **understanding to convenience** 🧠
+MIT

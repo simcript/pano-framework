@@ -1,0 +1,321 @@
+# Pano Architecture
+
+This document defines the technical architecture of Pano.
+
+It explains:
+
+- system structure
+- runtime model
+- execution flow
+- architectural boundaries
+- extension points
+- runtime contracts
+- and internal responsibilities
+
+This document does not explain the philosophy behind Pano.
+
+For architectural vision and project philosophy, refer to `MANIFESTO.md`.
+
+---
+
+# System Model
+
+Pano is built around three primary layers:
+
+```text
+Core
+    ↓
+Foundation
+    ↓
+Modules
+```
+
+Each layer has a specific responsibility and must remain isolated from unrelated concerns.
+
+---
+
+# Core
+
+The Core is the mandatory and lowest-level layer of Pano.
+
+The Core defines:
+
+- execution contracts
+- runtime abstractions
+- internal execution rules
+- shared execution structures
+
+The Core must remain:
+
+- minimal
+- deterministic
+- dependency-free
+- architecture-neutral
+
+The Core is not responsible for:
+
+- application architecture
+- business logic
+- domain structure
+- application conventions
+
+---
+
+# Core Responsibilities
+
+The Core is responsible for defining the minimum executable structure of the system.
+
+Including:
+
+- execution contracts
+- handler contracts
+- interceptor contracts
+- response contracts
+- runtime context contracts
+- execution boundaries
+
+The Core should never contain application-specific behavior.
+
+---
+
+# Foundation
+
+The Foundation is the default runtime implementation layer of Pano.
+
+It surrounds the Core and provides executable behavior.
+
+The Foundation is responsible for:
+
+- request lifecycle management
+- execution orchestration
+- response resolution
+- template rendering
+- runtime coordination
+- default execution flow
+
+---
+
+# Replaceable Foundation
+
+The Foundation is intentionally replaceable.
+
+Developers may:
+
+- replace the entire Foundation
+- create custom runtime behavior
+- define alternative execution flows
+- build their own framework on top of the Core
+
+The Core remains stable while Foundations may vary.
+
+---
+
+# Modules
+
+Pano is designed to support modular development effectively.
+
+Each module should remain:
+
+- isolated
+- independently maintainable
+- independently understandable
+- explicitly bounded
+
+Modules should communicate through explicit contracts rather than implicit shared state.
+
+---
+
+# Default Project Structure
+
+```text
+project/
+│
+├── config
+├── src
+│   ├── Core
+│   ├── Enum
+│   ├── Foundation
+│   └── Modules
+```
+
+---
+
+# Directory Responsibilities
+
+## config
+
+Contains runtime configuration and environment configuration.
+
+---
+
+## Core
+
+Contains execution contracts and runtime abstractions.
+
+---
+
+## Enum
+
+Contains shared enumerations and constant-driven structures.
+
+---
+
+## Foundation
+
+Contains the default runtime implementation layer.
+
+This layer is replaceable.
+
+---
+
+## Modules
+
+Contains application modules and domain logic.
+
+---
+
+# Runtime Lifecycle
+
+The default runtime lifecycle is intentionally explicit.
+
+```text
+Bootstrap
+    ↓
+Runtime Initialization
+    ↓
+Request Resolution
+    ↓
+Interceptor Pipeline
+    ↓
+Handler Execution
+    ↓
+Response Resolution
+    ↓
+Response Dispatch
+    ↓
+Termination
+```
+
+Execution flow should remain understandable and observable.
+
+---
+
+# Interceptors
+
+Interceptors provide execution interception capabilities.
+
+Interceptors may:
+
+- transform requests
+- validate execution state
+- perform authorization
+- observe runtime behavior
+- alter execution flow
+
+Interceptors should remain transport-independent.
+
+---
+
+# Handlers
+
+Handlers are executable processing units.
+
+Handlers are responsible for executing a single operation.
+
+Handlers should remain:
+
+- deterministic
+- isolated
+- explicitly scoped
+
+Handlers should not contain hidden runtime side effects.
+
+---
+
+# Runtime Context (Request)
+
+The Runtime Context represents the current execution state.
+
+It may contain:
+
+- request information
+- execution metadata
+- runtime state
+- shared execution references
+
+Runtime Contexts should remain explicit and traceable.
+
+---
+
+# Response Resolution
+
+Pano separates execution from response rendering.
+
+Handlers return executable results.
+
+The response resolver transforms execution results into renderable responses.
+
+This separation allows runtime flexibility across multiple transport layers.
+
+---
+
+# Extension Model
+
+Pano supports extension primarily through:
+
+- Foundation replacement
+- module composition
+- interceptor pipelines
+- runtime contracts
+
+Extensions should preserve execution predictability.
+
+---
+
+# Architectural Constraints
+
+Pano intentionally restricts:
+
+- hidden execution behavior
+- implicit runtime mutation
+- global mutable state
+- framework-driven architecture enforcement
+- magic-based execution
+- hidden dependency resolution
+
+Execution behavior must remain explicit.
+
+---
+
+# Runtime Invariants
+
+The following rules should always remain true:
+
+- execution must remain deterministic
+- modules must remain isolated
+- foundations must not violate Core contracts
+- execution flow must remain observable
+- runtime mutation must remain explicit
+- architectural assumptions must not become mandatory
+
+---
+
+# Code Design Principles
+
+Pano prioritizes:
+
+- readability
+- explicit contracts
+- strong typing
+- object-oriented design
+- predictable behavior
+
+Clarity is preferred over compact syntax.
+
+---
+
+# Final Principle
+
+The framework provides execution structure.
+
+Architectural decisions belong to developers.
