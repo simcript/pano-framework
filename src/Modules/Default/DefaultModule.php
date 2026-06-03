@@ -3,10 +3,10 @@
 
 namespace Pano\Modules\Default;
 
-use Pano\Core\BaseLogger;
-use Pano\Core\BaseModule;
-use Pano\Core\BaseRouter;
-use Pano\Core\BaseView;
+use Pano\Kernel\BaseLogger;
+use Pano\Kernel\BaseModule;
+use Pano\Kernel\BaseRouter;
+use Pano\Kernel\BaseView;
 use Pano\Foundation\Exception;
 use Pano\Foundation\Logger;
 use Pano\Foundation\View;

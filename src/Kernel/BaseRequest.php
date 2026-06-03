@@ -1,6 +1,6 @@
 <?php
 
-namespace Pano\Core;
+namespace Pano\Kernel;
 
 use Pano\Foundation\Bag;
 

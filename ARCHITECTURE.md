@@ -23,7 +23,7 @@ For architectural vision and project philosophy, refer to `MANIFESTO.md`.
 Pano is built around three primary layers:
 
 ```text
-Core
+Kernel
     ↓
 Foundation
     ↓
@@ -34,25 +34,25 @@ Each layer has a specific responsibility and must remain isolated from unrelated
 
 ---
 
-# Core
+# Kernel
 
-The Core is the mandatory and lowest-level layer of Pano.
+The Kernel is the mandatory and lowest-level layer of Pano.
 
-The Core defines:
+The Kernel defines:
 
 - execution contracts
 - runtime abstractions
 - internal execution rules
 - shared execution structures
 
-The Core must remain:
+The Kernel must remain:
 
 - minimal
 - deterministic
 - dependency-free
 - architecture-neutral
 
-The Core is not responsible for:
+The Kernel is not responsible for:
 
 - application architecture
 - business logic
@@ -61,9 +61,9 @@ The Core is not responsible for:
 
 ---
 
-# Core Responsibilities
+# Kernel Responsibilities
 
-The Core is responsible for defining the minimum executable structure of the system.
+The Kernel is responsible for defining the minimum executable structure of the system.
 
 Including:
 
@@ -74,7 +74,7 @@ Including:
 - runtime context contracts
 - execution boundaries
 
-The Core should never contain application-specific behavior.
+The Kernel should never contain application-specific behavior.
 
 ---
 
@@ -82,7 +82,7 @@ The Core should never contain application-specific behavior.
 
 The Foundation is the default runtime implementation layer of Pano.
 
-It surrounds the Core and provides executable behavior.
+It surrounds the Kernel and provides executable behavior.
 
 The Foundation is responsible for:
 
@@ -104,9 +104,9 @@ Developers may:
 - replace the entire Foundation
 - create custom runtime behavior
 - define alternative execution flows
-- build their own framework on top of the Core
+- build their own framework on top of the Kernel
 
-The Core remains stable while Foundations may vary.
+The Kernel remains stable while Foundations may vary.
 
 ---
 
@@ -132,7 +132,7 @@ project/
 │
 ├── config
 ├── src
-│   ├── Core
+│   ├── Kernel
 │   ├── Enum
 │   ├── Foundation
 │   └── Modules
@@ -148,7 +148,7 @@ Contains runtime configuration and environment configuration.
 
 ---
 
-## Core
+## Kernel
 
 Contains execution contracts and runtime abstractions.
 
@@ -293,7 +293,7 @@ The following rules should always remain true:
 
 - execution must remain deterministic
 - modules must remain isolated
-- foundations must not violate Core contracts
+- foundations must not violate Kernel contracts
 - execution flow must remain observable
 - runtime mutation must remain explicit
 - architectural assumptions must not become mandatory

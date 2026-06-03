@@ -51,7 +51,7 @@ Avoid Pano if you need:
 
 Pano introduces a minimal set of runtime concepts:
 
-- Core
+- Kernel
 - Foundation
 - Modules
 - Handlers
@@ -87,7 +87,7 @@ $app->run();
 project/
 ├── config
 ├── src
-│   ├── Core
+│   ├── Kernel
 │   ├── Enum
 │   ├── Foundation
 │   └── Modules
@@ -114,7 +114,7 @@ project/
 Before contributing:
 
 - read ARCHITECTURE.md
-- respect core boundaries
+- respect Kernel boundaries
 - avoid introducing hidden behavior
 - keep runtime explicit and predictable
 

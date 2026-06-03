@@ -2,8 +2,8 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseBoot;
-use Pano\Core\BaseModule;
+use Pano\Kernel\BaseBoot;
+use Pano\Kernel\BaseModule;
 use ReflectionClass;
 
 final class Boot extends BaseBoot

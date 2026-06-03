@@ -3,8 +3,8 @@
 namespace Pano\Modules\Default\Commands;
 
 use Composer\InstalledVersions;
-use Pano\Core\BaseCommand;
-use Pano\Core\ResultCodeEnum;
+use Pano\Kernel\BaseCommand;
+use Pano\Kernel\ResultCodeEnum;
 
 class DefaultCommand extends BaseCommand
 {

@@ -2,12 +2,12 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseException;
-use Pano\Core\BaseRequest;
-use Pano\Core\BaseResponse;
-use Pano\Core\HttpMethodEnum;
-use Pano\Core\HttpStatusEnum;
-use Pano\Core\ResultCodeEnum;
+use Pano\Kernel\BaseException;
+use Pano\Kernel\BaseRequest;
+use Pano\Kernel\BaseResponse;
+use Pano\Kernel\HttpMethodEnum;
+use Pano\Kernel\HttpStatusEnum;
+use Pano\Kernel\ResultCodeEnum;
 
 final class Response extends BaseResponse
 {

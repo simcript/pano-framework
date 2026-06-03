@@ -2,8 +2,8 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseRequest;
-use Pano\Core\HttpMethodEnum;
+use Pano\Kernel\BaseRequest;
+use Pano\Kernel\HttpMethodEnum;
 
 final class CLIRequest extends BaseRequest
 {

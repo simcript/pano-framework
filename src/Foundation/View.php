@@ -2,7 +2,7 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseView;
+use Pano\Kernel\BaseView;
 
 final class View extends BaseView
 {

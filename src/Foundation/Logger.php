@@ -2,8 +2,8 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseLogger;
-use Pano\Core\LogLevelEnum;
+use Pano\Kernel\BaseLogger;
+use Pano\Kernel\LogLevelEnum;
 
 final class Logger extends BaseLogger
 {

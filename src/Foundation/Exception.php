@@ -2,7 +2,7 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseException;
+use Pano\Kernel\BaseException;
 
 final class Exception extends BaseException
 {

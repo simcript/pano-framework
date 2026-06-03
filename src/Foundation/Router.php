@@ -2,9 +2,9 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseRouter;
-use Pano\Core\HttpMethodEnum;
-use Pano\Core\HttpStatusEnum;
+use Pano\Kernel\BaseRouter;
+use Pano\Kernel\HttpMethodEnum;
+use Pano\Kernel\HttpStatusEnum;
 
 final class Router extends BaseRouter
 {

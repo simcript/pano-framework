@@ -54,13 +54,13 @@ Pano does not try to be everything.
 
 Pano tries to be a foundation upon which anything can be built.
 
-Pano is closer to a core than a complete framework.
+Pano is closer to a Kernel than a complete framework.
 
-Much like the Linux kernel, it only provides the core execution structure while everything else can be built on top of it.
+Much like the Linux kernel, it only provides the Kernel execution structure while everything else can be built on top of it.
 
 ---
 
-# Freedom Is The Core Principle
+# Freedom Is The Kernel Principle
 
 Pano was not created to impose architecture.
 
@@ -152,15 +152,15 @@ Pano does not try to replace every tool.
 
 ---
 
-# A Strict Core With A Replaceable Foundation
+# A Strict Kernel With A Replaceable Foundation
 
-The philosophy of Pano is built around a strict abstract core.
+The philosophy of Pano is built around a strict abstract Kernel.
 
-Following this core is mandatory.
+Following this Kernel is mandatory.
 
-However, the core itself is intentionally tiny and minimal.
+However, the Kernel itself is intentionally tiny and minimal.
 
-On top of this core sits an execution foundation that is entirely replaceable.
+On top of this Kernel sits an execution foundation that is entirely replaceable.
 
 This allows developers to:
 

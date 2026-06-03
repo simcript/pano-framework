@@ -2,8 +2,8 @@
 
 namespace Pano\Modules\Default\Interceptors;
 
-use Pano\Core\BaseInterceptor;
-use Pano\Core\BaseResponse;
+use Pano\Kernel\BaseInterceptor;
+use Pano\Kernel\BaseResponse;
 
 class DefaultInterceptor extends BaseInterceptor
 {

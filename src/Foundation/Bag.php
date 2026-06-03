@@ -2,7 +2,7 @@
 
 namespace Pano\Foundation;
 
-use Pano\Core\BaseBag;
+use Pano\Kernel\BaseBag;
 
 final class Bag extends BaseBag
 {
