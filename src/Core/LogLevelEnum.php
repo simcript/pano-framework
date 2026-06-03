@@ -1,8 +1,8 @@
 <?php
 
-namespace Pano\Enum;
+namespace Pano\Core;
 
-enum LogLevel: string
+enum LogLevelEnum: string
 {
     case EMERGENCY = 'emergency';
     case ALERT     = 'alert';

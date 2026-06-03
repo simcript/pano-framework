@@ -3,8 +3,8 @@
 namespace Pano\Foundation;
 
 use Pano\Core\BaseRouter;
-use Pano\Enum\HttpMethod;
-use Pano\Enum\HttpStatus;
+use Pano\Core\HttpMethodEnum;
+use Pano\Core\HttpStatusEnum;
 
 final class Router extends BaseRouter
 {
@@ -19,9 +19,9 @@ final class Router extends BaseRouter
     public function get(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::GET, $path, $class, $action, $interceptors);
+            $this->register(HttpMethodEnum::GET, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatusEnum::INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -35,9 +35,9 @@ final class Router extends BaseRouter
     public function post(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::POST, $path, $class, $action, $interceptors);
+            $this->register(HttpMethodEnum::POST, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatusEnum::INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -51,9 +51,9 @@ final class Router extends BaseRouter
     public function put(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::PUT, $path, $class, $action, $interceptors);
+            $this->register(HttpMethodEnum::PUT, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatusEnum::INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -67,9 +67,9 @@ final class Router extends BaseRouter
     public function delete(string $path, string $class, string $action, array $interceptors = []): void
     {
         try {
-            $this->register(HttpMethod::DELETE, $path, $class, $action, $interceptors);
+            $this->register(HttpMethodEnum::DELETE, $path, $class, $action, $interceptors);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode(), HttpStatus::INTERNAL_SERVER_ERROR);
+            throw new Exception($e->getMessage(), $e->getCode(), HttpStatusEnum::INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -78,11 +78,11 @@ final class Router extends BaseRouter
      */
     protected function notFound(): mixed
     {
-        if (HttpMethod::CLI === $this->request->getMethod()) {
-            throw new Exception('Command not found', 404, HttpStatus::NOT_FOUND);
+        if (HttpMethodEnum::CLI === $this->request->getMethod()) {
+            throw new Exception('Command not found', 404, HttpStatusEnum::NOT_FOUND);
         }
 
-        throw new Exception('Route not found', 404, HttpStatus::NOT_FOUND);
+        throw new Exception('Route not found', 404, HttpStatusEnum::NOT_FOUND);
     }
 
 }

@@ -3,7 +3,6 @@
 namespace Pano\Core;
 
 use Exception;
-use Pano\Enum\HttpMethod;
 use ReflectionClass;
 use ReflectionNamedType;
 
@@ -60,17 +59,17 @@ abstract class BaseRouter
 
     public function handle(): mixed
     {
-        return ($this->request->getMethod() === HttpMethod::CLI)
+        return ($this->request->getMethod() === HttpMethodEnum::CLI)
             ? $this->dispatchConsole()
             : $this->dispatchHttp();
     }
 
     protected function register(
-        HttpMethod $method,
-        string     $path,
-        string     $class,
-        string     $action,
-        array      $interceptors = []
+        HttpMethodEnum $method,
+        string         $path,
+        string         $class,
+        string         $action,
+        array          $interceptors = []
     ): void
     {
         if (!class_exists($class)) {

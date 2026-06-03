@@ -2,21 +2,21 @@
 
 namespace Pano\Foundation;
 
+use Pano\Core\BaseException;
 use Pano\Core\BaseRequest;
 use Pano\Core\BaseResponse;
-use Pano\Core\BaseException;
-use Pano\Enum\HttpMethod;
-use Pano\Enum\HttpStatus;
-use Pano\Enum\ResultCode;
+use Pano\Core\HttpMethodEnum;
+use Pano\Core\HttpStatusEnum;
+use Pano\Core\ResultCodeEnum;
 
 final class Response extends BaseResponse
 {
     private bool $sent = false;
 
     public static function make(
-        mixed $body = null,
-        HttpStatus $status = HttpStatus::OK,
-        array $headers = []
+        mixed          $body = null,
+        HttpStatusEnum $status = HttpStatusEnum::OK,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -25,9 +25,9 @@ final class Response extends BaseResponse
     }
 
     public static function json(
-        array|object $data,
-        HttpStatus $status = HttpStatus::OK,
-        array $headers = []
+        array|object   $data,
+        HttpStatusEnum $status = HttpStatusEnum::OK,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -37,9 +37,9 @@ final class Response extends BaseResponse
     }
 
     public static function text(
-        string $text,
-        HttpStatus $status = HttpStatus::OK,
-        array $headers = []
+        string         $text,
+        HttpStatusEnum $status = HttpStatusEnum::OK,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -49,9 +49,9 @@ final class Response extends BaseResponse
     }
 
     public static function html(
-        string $html,
-        HttpStatus $status = HttpStatus::OK,
-        array $headers = []
+        string         $html,
+        HttpStatusEnum $status = HttpStatusEnum::OK,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -61,10 +61,10 @@ final class Response extends BaseResponse
     }
 
     public static function stream(
-        callable $callback,
-        string $contentType = 'application/octet-stream',
-        HttpStatus $status = HttpStatus::OK,
-        array $headers = []
+        callable       $callback,
+        string         $contentType = 'application/octet-stream',
+        HttpStatusEnum $status = HttpStatusEnum::OK,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -74,9 +74,9 @@ final class Response extends BaseResponse
     }
 
     public static function redirect(
-        string $to,
-        HttpStatus $status = HttpStatus::FOUND,
-        array $headers = []
+        string         $to,
+        HttpStatusEnum $status = HttpStatusEnum::FOUND,
+        array          $headers = []
     ): self {
         return (new self())
             ->setStatus($status)
@@ -91,9 +91,9 @@ final class Response extends BaseResponse
 
     public static function terminal(
         string $text,
-        ResultCode $status = ResultCode::OK
+        ResultCodeEnum $status = ResultCodeEnum::OK
     ): self {
-        $text = $status === ResultCode::OK ? "\033[32m$text\033[0m\n" : "\033[31m$text\033[0m\n";
+        $text = $status === ResultCodeEnum::OK ? "\033[32m$text\033[0m\n" : "\033[31m$text\033[0m\n";
         return (new self())
             ->setStatus($status)
             ->setBody($text);
@@ -107,8 +107,8 @@ final class Response extends BaseResponse
 
         if ($e instanceof BaseException) {
 
-            if ($request->getMethod() === HttpMethod::CLI) {
-                return self::terminal($e->getMessage(), ResultCode::ERROR);
+            if ($request->getMethod() === HttpMethodEnum::CLI) {
+                return self::terminal($e->getMessage(), ResultCodeEnum::ERROR);
             }
 
             if ($request->expectsJson()) {
@@ -126,7 +126,7 @@ final class Response extends BaseResponse
 
         return self::text(
             $debug ? $e->getMessage() : 'Server Error',
-            HttpStatus::INTERNAL_SERVER_ERROR
+            HttpStatusEnum::INTERNAL_SERVER_ERROR
         );
     }
 
@@ -136,7 +136,7 @@ final class Response extends BaseResponse
             return;
         }
 
-        if ($this->status instanceof HttpStatus) {
+        if ($this->status instanceof HttpStatusEnum) {
             http_response_code($this->status->value);
 
             foreach ($this->headers as $key => $value) {

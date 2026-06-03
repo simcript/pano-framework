@@ -3,7 +3,7 @@
 namespace Pano\Foundation;
 
 use Pano\Core\BaseLogger;
-use Pano\Enum\LogLevel;
+use Pano\Core\LogLevelEnum;
 
 final class Logger extends BaseLogger
 {
@@ -15,41 +15,41 @@ final class Logger extends BaseLogger
 
     public function info(string $message, array $context = []): void
     {
-        $this->log(LogLevel::INFO, $message, $context);
+        $this->log(LogLevelEnum::INFO, $message, $context);
     }
 
     public function error(string $message, array $context = []): void
     {
-        $this->log(LogLevel::ERROR, $message, $context);
+        $this->log(LogLevelEnum::ERROR, $message, $context);
     }
 
     public function debug(string $message, array $context = []): void
     {
-        $this->log(LogLevel::DEBUG, $message, $context);
+        $this->log(LogLevelEnum::DEBUG, $message, $context);
     }
 
     public function emergency(string $message, array $context = []): void
     {
-        $this->log(LogLevel::EMERGENCY, $message, $context);
+        $this->log(LogLevelEnum::EMERGENCY, $message, $context);
     }
 
     public function alert(string $message, array $context = []): void
     {
-        $this->log(LogLevel::ALERT, $message, $context);
+        $this->log(LogLevelEnum::ALERT, $message, $context);
     }
 
     public function critical(string $message, array $context = []): void
     {
-        $this->log(LogLevel::CRITICAL, $message, $context);
+        $this->log(LogLevelEnum::CRITICAL, $message, $context);
     }
 
     public function warning(string $message, array $context = []): void
     {
-        $this->log(LogLevel::WARNING, $message, $context);
+        $this->log(LogLevelEnum::WARNING, $message, $context);
     }
 
     public function notice(string $message, array $context = []): void
     {
-        $this->log(LogLevel::NOTICE, $message, $context);
+        $this->log(LogLevelEnum::NOTICE, $message, $context);
     }
 }

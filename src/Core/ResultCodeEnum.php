@@ -1,8 +1,8 @@
 <?php
 
-namespace Pano\Enum;
+namespace Pano\Core;
 
-enum ResultCode: int
+enum ResultCodeEnum: int
 {
     case OK = 0;
     case ERROR = 1;

@@ -2,8 +2,6 @@
 
 namespace Pano\Core;
 
-use Pano\Enum\ResultCode;
-
 abstract class BaseCommand
 {
 
@@ -13,7 +11,7 @@ abstract class BaseCommand
     ){
     }
 
-    abstract public function handle(array $arguments): ResultCode;
+    abstract public function handle(array $arguments): ResultCodeEnum;
 
     protected function info(string $text): void
     {

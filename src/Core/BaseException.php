@@ -2,8 +2,6 @@
 
 namespace Pano\Core;
 
-use Pano\Enum\HttpStatus;
-
 abstract class BaseException extends \Exception
 {
 
@@ -11,16 +9,16 @@ abstract class BaseException extends \Exception
 
     abstract public function toHtml(bool $debug = false): string;
 
-    protected HttpStatus $status;
+    protected HttpStatusEnum $status;
     protected mixed $payload;
     protected bool $report;
 
     public function __construct(
-        string      $message,
-        int         $code = 0,
-        HttpStatus  $status = HttpStatus::INTERNAL_SERVER_ERROR,
-        mixed       $payload = null,
-        ?\Throwable $previous = null
+        string         $message,
+        int            $code = 0,
+        HttpStatusEnum $status = HttpStatusEnum::INTERNAL_SERVER_ERROR,
+        mixed          $payload = null,
+        ?\Throwable    $previous = null
     )
     {
         parent::__construct($message, $code, $previous);
@@ -29,7 +27,7 @@ abstract class BaseException extends \Exception
         $this->payload = $payload;
     }
 
-    public function status(): HttpStatus
+    public function status(): HttpStatusEnum
     {
         return $this->status;
     }

@@ -1,8 +1,8 @@
 <?php
 
-namespace Pano\Enum;
+namespace Pano\Core;
 
-enum HttpMethod: string
+enum HttpMethodEnum: string
 {
 
     // RFC 7231 / RFC 9110 (Core)

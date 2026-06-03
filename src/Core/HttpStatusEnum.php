@@ -1,8 +1,8 @@
 <?php
 
-namespace Pano\Enum;
+namespace Pano\Core;
 
-enum HttpStatus: int
+enum HttpStatusEnum: int
 {
     // 1xx — Informational
     case CONTINUE = 100;

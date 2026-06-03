@@ -2,8 +2,6 @@
 
 namespace Pano\Core;
 
-use Pano\Enum\LogLevel;
-
 abstract class BaseLogger
 {
     abstract public function emergency(string $message, array $context = []): void;
@@ -28,7 +26,7 @@ abstract class BaseLogger
     {
     }
 
-    protected function log(LogLevel $level, string $message, array $context = []): void
+    protected function log(LogLevelEnum $level, string $message, array $context = []): void
     {
         $directory = dirname($this->filePath);
         if (!is_dir($directory)) {
