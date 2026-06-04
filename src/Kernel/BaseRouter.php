@@ -153,7 +153,9 @@ abstract class BaseRouter
 
     private function normalizeUri(string $uri): string
     {
-        return trim(parse_url($uri, PHP_URL_PATH) ?? '/', '/') ?: '/';
+        return $this->normalizePath(
+            parse_url($uri, PHP_URL_PATH) ?? '/'
+        );
     }
 
     private function checkHandler(string $class, string $action): void
