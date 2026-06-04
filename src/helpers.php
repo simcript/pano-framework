@@ -49,7 +49,7 @@ if (!function_exists('dd')) {
 if (!function_exists('url')) {
     function url(string $path): string
     {
-        return trim(config('app.url'), '/') . '/' . $path;
+        return trim(config('app.url'), '/') . '/' . trim($path, '/');
     }
 }
 
@@ -62,6 +62,7 @@ if (!function_exists('env')) {
             ?? $default;
     }
 }
+
 if (!function_exists('config')) {
 
     function config(string $key, mixed $default = null): mixed
@@ -88,6 +89,13 @@ if (!function_exists('config')) {
             $result = $result[$segment];
         }
         return $result;
+    }
+
+    if (!function_exists('currentUrl')) {
+        function currentUrl(): string
+        {
+            return trim(url($_SERVER['REQUEST_URI'] ?? '/'), '/');
+        }
     }
 }
 
