@@ -6,15 +6,15 @@ use Pano\Foundation\Bag;
 
 abstract class BaseRequest
 {
-    protected string|array $data;
-    protected array $files;
-    protected array $headers;
-    protected array $queries;
-    protected HttpMethodEnum $method;
-    protected string $query;
-    protected string $url;
-    protected array $segments;
-    protected string $host;
+    protected string|array $data = [];
+    protected array $files = [];
+    protected array $headers = [];
+    protected array $queries = [];
+    protected HttpMethodEnum $method = HttpMethodEnum::GET;
+    protected string $query = '';
+    protected string $url = '';
+    protected array $segments = [];
+    protected string $host = '';
     public Bag $attributes;
 
     public function getData(): string|array
