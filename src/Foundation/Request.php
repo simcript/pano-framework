@@ -26,48 +26,92 @@ final class Request extends BaseRequest
     {
         if (config('app.resolver') === 'path') {
             return $this->segments[0] ?? '';
-        } else if (config('app.resolver') === 'subdomain') {
-            $host = parse_url($this->url, PHP_URL_HOST);
-            if (($host === false) || ($host === null)) {
-                return '';
-            }
-            $parts = explode('.', $host);
-            if (count($parts) < 3) {
-                return '';
-            }
-            $subdomainParts = array_slice($parts, 0, -2);
-            return implode('.', $subdomainParts);
-        } else {
-            throw new Exception('Module resolver not valid: ' . config('app.resolver'));
         }
+
+        if (config('app.resolver') === 'subdomain') {
+            $host = parse_url($this->host, PHP_URL_HOST);
+
+            $rootDomain = parse_url(config('app.url'), PHP_URL_HOST);
+
+            if ((empty($host) || empty($rootDomain))
+                || (($host === $rootDomain)
+                || !str_ends_with($host, '.' . $rootDomain))) {
+                return '';
+            }
+
+            return rtrim(
+                substr($host, 0, -strlen($rootDomain)),
+                '.'
+            );
+        }
+
+        throw new Exception(
+            'Module resolver not valid: ' . config('app.resolver')
+        );
     }
 
     public function expectsJson(): bool
     {
-        $accept = $this->headers['Accept'] ?? '';
+        $accept = $this->headers['accept'] ?? '';
         return str_contains($accept, '*/json');
     }
 
     private function fetchData(): self
     {
-        $data = file_get_contents('php://input');
-        if (empty($data)) {
-            $data = $_REQUEST;
+        if (!empty($_POST)) {
+            $this->data = $_POST;
+            return $this;
         }
-        $this->data = $data;
+
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $input = file_get_contents('php://input');
+
+        if (str_contains($contentType, 'application/json')) {
+            $this->data = json_decode($input, true) ?? [];
+            return $this;
+        }
+        if (str_contains($contentType, 'application/x-www-form-urlencoded') && !empty($input)) {
+            parse_str($input, $this->data);
+            return $this;
+        }
+        $this->data = [];
+
         return $this;
     }
 
     private function fetchFiles(): self
     {
-        $this->files = $_FILES;
+        $files = $_FILES;
+        $result = [];
+
+        foreach ($files as $field => $file) {
+
+            if (!is_array($file['name'])) {
+                $result[$field] = $file;
+                continue;
+            }
+
+            $result[$field] = [];
+
+            foreach (array_keys($file['name']) as $index) {
+                $result[$field][] = [
+                    'name'     => $file['name'][$index],
+                    'type'     => $file['type'][$index],
+                    'tmp_name' => $file['tmp_name'][$index],
+                    'error'    => $file['error'][$index],
+                    'size'     => $file['size'][$index],
+                ];
+            }
+        }
+
+        $this->files = $result;
         return $this;
     }
 
     private function fetchHeaders(): self
     {
         try {
-            $this->headers = getallheaders();
+            $this->headers = array_change_key_case(getallheaders(), CASE_LOWER);
         } catch (\Throwable $throwable) {
             $this->headers = [];
         }
@@ -76,9 +120,14 @@ final class Request extends BaseRequest
 
     private function fetchMethod(array $info): self
     {
-        $method = $info['REQUEST_METHOD'] ?? 'GET';
+        $method = strtoupper($info['REQUEST_METHOD'] ?? HttpMethodEnum::GET->value);
+        if ($method === HttpMethodEnum::POST->value) {
+            $override = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? $_POST['_method'] ?? null;
+            if ($override !== null) {
+                $method = strtoupper($override);
+            }
+        }
         $this->method = HttpMethodEnum::tryFrom($method) ?? HttpMethodEnum::GET;
-
         return $this;
     }
 
@@ -91,39 +140,36 @@ final class Request extends BaseRequest
 
     private function fetchSegments(array $info): self
     {
-        $uri = trim(($info['REQUEST_URI'] ?? ''), '/');
-        $this->segments = explode('/', $uri);
+        $path = parse_url($info['REQUEST_URI'] ?? '', PHP_URL_PATH);
+        $this->segments = explode('/', trim($path, '/'));
         return $this;
     }
 
     private function fetchUrl(): self
     {
-        $uriSections = $this->segments;
+        $path = parse_url(
+            $_SERVER['REQUEST_URI'] ?? '/',
+            PHP_URL_PATH
+        );
+
+        $path ??= '/';
+
         if (config('app.resolver') === 'path') {
-            unset($uriSections[0]);
+            $segments = explode('/', trim($path, '/'));
+            unset($segments[0]);
+
+            $path = '/' . implode('/', $segments);
         }
-        $path = implode('/', $uriSections);
-        $path = str_replace($this->query, '', $path);
-        $this->url = trim($path, '?');
+
+        $this->url = trim($path, '/');
+
         return $this;
     }
 
     private function fetchQuery(array $info): self
     {
         $this->query = $info['QUERY_STRING'] ?? '';
-        $queries = explode('&', $this->query);
-        $result = [];
-        foreach ($queries as $query) {
-            $tmpQuery = explode('=', $query);
-            $field = $tmpQuery[0];
-            if (empty($field)) {
-                continue;
-            }
-            unset($tmpQuery[0]);
-            $value = implode('=', $tmpQuery);
-            $result[$field] = $value;
-        }
-        $this->queries = $result;
+        parse_str($this->query, $this->queries);
         return $this;
     }
 
