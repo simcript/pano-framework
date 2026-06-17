@@ -97,8 +97,9 @@ project/
 
 # Documentation
 
-- MANIFESTO.md → philosophy and principles
-- ARCHITECTURE.md → system design and runtime model
+- [DOCUMENTATION.md](DOCUMENTATION.md) → complete developer guide and API reference
+- [MANIFESTO.md](MANIFESTO.md) → philosophy and principles
+- [ARCHITECTURE.md](ARCHITECTURE.md) → system design and runtime model
 
 ---
 
