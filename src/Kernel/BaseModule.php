@@ -2,23 +2,16 @@
 
 namespace Pano\Kernel;
 
-use Pano\Foundation\Router;
-
 abstract readonly class BaseModule
 {
-    abstract protected function routes(): BaseRouter;
+    abstract public function routes(): BaseRouter;
 
     abstract public function view(): BaseView;
 
     abstract public function log(): BaseLogger;
 
-    protected BaseRouter $router;
-
-    public function __construct(
-        protected BaseRequest $request
-    )
+    public function __construct(protected BaseRequest $request)
     {
-        $this->router = new Router($this->request, $this);
     }
 
     protected function viewPath(): string

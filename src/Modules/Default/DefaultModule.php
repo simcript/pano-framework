@@ -3,6 +3,7 @@
 
 namespace Pano\Modules\Default;
 
+use Pano\Foundation\Router;
 use Pano\Kernel\BaseLogger;
 use Pano\Kernel\BaseModule;
 use Pano\Kernel\BaseRouter;
@@ -21,10 +22,11 @@ final readonly class DefaultModule extends BaseModule
      */
     public function routes(): BaseRouter
     {
-        $this->router->get('/', DefaultHandler::class, 'info', [DefaultInterceptor::class]);
-        $this->router->command('app:info', DefaultCommand::class);
+        $router = new Router($this->request, $this);
+        $router->get('/', DefaultHandler::class, 'info', [DefaultInterceptor::class]);
+        $router->command('app:info', DefaultCommand::class);
 
-        return $this->router;
+        return $router;
     }
 
     public function view(): BaseView

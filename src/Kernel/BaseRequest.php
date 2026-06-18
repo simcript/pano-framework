@@ -2,8 +2,6 @@
 
 namespace Pano\Kernel;
 
-use Pano\Foundation\Bag;
-
 abstract class BaseRequest
 {
     protected string|array $data = [];
@@ -15,7 +13,7 @@ abstract class BaseRequest
     protected string $url = '';
     protected array $segments = [];
     protected string $host = '';
-    public Bag $attributes;
+    public BaseBag $attributes;
 
     public function getData(): string|array
     {

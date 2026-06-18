@@ -45,8 +45,7 @@ final class Boot extends BaseBoot
             if (!$reflection->isSubclassOf(BaseModule::class)) {
                 throw new Exception("Module ($moduleName) must extend " . BaseModule::class);
             }
-            $module = $reflection->newInstance($this->request);
-            $module->routes()->handle();
+            $reflection->newInstance($this->request)->routes()->handle();
         } catch (\Throwable $e) {
             Response::exception($e, $this->request)->send();
         }
