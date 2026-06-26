@@ -22,7 +22,7 @@ final class CLIRequest extends BaseRequest
 
     public function getModule(): string
     {
-        return $this->segments[0];
+        return $this->host;
     }
     public function getPositional(): string|array
     {
@@ -80,19 +80,19 @@ final class CLIRequest extends BaseRequest
 
     private function fetchPath(array $data): self
     {
-        $this->host = $data[1];
+        $this->host = trim($data[1]) === '/' ? '' : trim($data[1]);
         return $this;
     }
 
     private function fetchSegments(array $data): self
     {
-        $this->segments = explode('/', $data[1]);
+        $this->segments = explode('/', $data[2]);
         return $this;
     }
 
     private function fetchCommand(): self
     {
-        $url = $this->segments[1];
+        $url = '/'  . $this->segments[0];
         foreach ($this->data as $item) {
             $url .= ' ' . $item;
         }
@@ -109,7 +109,7 @@ final class CLIRequest extends BaseRequest
     private function fetchPositional(array $data): self
     {
         $this->data = [];
-        $arguments = array_slice($data, 2);
+        $arguments = array_slice($data, 3);
         foreach ($arguments as $argument) {
             if (!str_starts_with($argument, '--')) {
                 $this->data[] = $argument;
