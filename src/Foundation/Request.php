@@ -10,6 +10,7 @@ final class Request extends BaseRequest
     public function __construct(array $data)
     {
         $this->fetchMethod($data)
+            ->setModule()
             ->fetchQuery($data)
             ->fetchHost($data)
             ->fetchSegments($data)
@@ -24,30 +25,7 @@ final class Request extends BaseRequest
 
     public function getModule(): string
     {
-        if (config('app.resolver') === 'path') {
-            return $this->segments[0] ?? '';
-        }
-
-        if (config('app.resolver') === 'subdomain') {
-            $host = parse_url($this->host, PHP_URL_HOST);
-
-            $rootDomain = parse_url(config('app.url'), PHP_URL_HOST);
-
-            if ((empty($host) || empty($rootDomain))
-                || (($host === $rootDomain)
-                || !str_ends_with($host, '.' . $rootDomain))) {
-                return '';
-            }
-
-            return rtrim(
-                substr($host, 0, -strlen($rootDomain)),
-                '.'
-            );
-        }
-
-        throw new Exception(
-            'Module resolver not valid: ' . config('app.resolver')
-        );
+        return $this->module;
     }
 
     public function expectsJson(): bool
@@ -154,11 +132,8 @@ final class Request extends BaseRequest
 
         $path ??= '/';
 
-        if (config('app.resolver') === 'path') {
-            $segments = explode('/', trim($path, '/'));
-            unset($segments[0]);
-
-            $path = '/' . implode('/', $segments);
+        if (config('app.resolver') !== 'subdomain') {
+            $path = trim(substr($path, strlen($this->getModule())), '/');
         }
 
         $this->url = trim($path, '/');

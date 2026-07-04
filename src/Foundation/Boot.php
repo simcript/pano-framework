@@ -36,7 +36,12 @@ final class Boot extends BaseBoot
 
             $moduleName = config('modules.' . $module, null);
             if ($moduleName === null) {
-                throw new Exception("No module found for '$module'");
+                if ($module === '') {
+                    throw new Exception("No module found for '$module'");
+                }
+                $this->request->setModule($module);
+                $this->dispatcher();
+                return;
             }
             if (!class_exists($moduleName)) {
                 throw new Exception("Module class ($moduleName) not found");
