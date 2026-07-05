@@ -11,9 +11,9 @@ final class CLIRequest extends BaseRequest
     public function __construct(array $data)
     {
         $this->fetchMethod()
+            ->fetchSegments($data)
             ->fetchOptions($data)
             ->fetchPath($data)
-            ->fetchSegments($data)
             ->fetchPositional($data)
             ->fetchCommand()
             ->fetchFiles()

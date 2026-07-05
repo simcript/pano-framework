@@ -10,10 +10,10 @@ final class Request extends BaseRequest
     public function __construct(array $data)
     {
         $this->fetchMethod($data)
+            ->fetchSegments($data)
             ->setModule()
             ->fetchQuery($data)
             ->fetchHost($data)
-            ->fetchSegments($data)
             ->fetchUrl()
             ->fetchData()
             ->fetchFiles()
