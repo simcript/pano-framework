@@ -39,7 +39,7 @@ final class Boot extends BaseBoot
                 if ($module === '') {
                     throw new Exception("No module found for '$module'");
                 }
-                $this->request->setModule($module);
+                $this->request->setModule('');
                 $this->dispatcher();
                 return;
             }

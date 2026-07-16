@@ -133,7 +133,7 @@ final class Request extends BaseRequest
         $path ??= '/';
 
         if (config('app.resolver') !== 'subdomain') {
-            $path = trim(substr($path, strlen($this->getModule())), '/');
+            $path = substr(trim($path, '/'), strlen($this->getModule()));
         }
 
         $this->url = trim($path, '/');
