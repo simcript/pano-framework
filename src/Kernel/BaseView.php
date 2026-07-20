@@ -53,7 +53,7 @@ abstract class BaseView
         });
 
         if ($layout !== null) {
-            $this->sections['content'] = $content;
+            $this->sections['__default_content'] = $content;
 
             $content = $this->capture(function () use ($layout) {
                 extract($this->data, EXTR_SKIP);
