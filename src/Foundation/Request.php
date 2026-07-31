@@ -7,11 +7,11 @@ use Pano\Kernel\HttpMethodEnum;
 
 final class Request extends BaseRequest
 {
-    public function __construct(array $data)
+    public function __construct(array $data, null|string $module = null)
     {
         $this->fetchMethod($data)
             ->fetchSegments($data)
-            ->setModule()
+            ->setModule($module)
             ->fetchQuery($data)
             ->fetchHost($data)
             ->fetchUrl()
@@ -21,6 +21,31 @@ final class Request extends BaseRequest
 
         /** @var Bag $attributes */
         $this->attributes = new Bag();
+    }
+
+    protected function setModule(null|string $module = null): static
+    {
+        if ($module !== null) {
+            $this->module = $module;
+        } else if (config('app.resolver') === 'subdomain') {
+            $host = parse_url($this->host, PHP_URL_HOST);
+            $rootDomain = parse_url(config('app.url'), PHP_URL_HOST);
+
+            if ((empty($host) || empty($rootDomain))
+                || (($host === $rootDomain)
+                    || !str_ends_with($host, '.' . $rootDomain))) {
+                $this->module = '';
+            } else {
+                $this->module = rtrim(
+                    substr($host, 0, -strlen($rootDomain)),
+                    '.'
+                );
+            }
+        } else {
+            $this->module = $this->segments[0] ?? '';
+        }
+
+        return $this;
     }
 
     public function getModule(): string

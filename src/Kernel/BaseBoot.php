@@ -6,8 +6,6 @@ abstract class BaseBoot
 {
     abstract public function run(): void;
 
-    protected BaseRequest $request;
-
     protected function debug(bool $status): void
     {
         error_reporting(E_ERROR | E_PARSE);

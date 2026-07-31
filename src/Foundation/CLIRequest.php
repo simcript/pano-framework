@@ -12,6 +12,7 @@ final class CLIRequest extends BaseRequest
     {
         $this->fetchMethod()
             ->fetchSegments($data)
+            ->setModule($data)
             ->fetchOptions($data)
             ->fetchPath($data)
             ->fetchPositional($data)
@@ -20,10 +21,6 @@ final class CLIRequest extends BaseRequest
             ->fetchQueries();
     }
 
-    public function getModule(): string
-    {
-        return $this->host;
-    }
     public function getPositional(): string|array
     {
         return $this->data;
@@ -47,6 +44,11 @@ final class CLIRequest extends BaseRequest
     public function getPath(): string
     {
         return $this->host;
+    }
+
+    public function expectsJson(): bool
+    {
+        return false;
     }
 
     private function fetchMethod(): self
@@ -129,10 +131,10 @@ final class CLIRequest extends BaseRequest
         $this->queries = [];
     }
 
-
-    public function expectsJson(): bool
+    private function setModule(array $data): self
     {
-        return false;
+        $this->module = $data[1] === '/' ? '' : $data[1];
+        return $this;
     }
 
 }
