@@ -10,24 +10,14 @@ use ReflectionClass;
 
 final class Boot extends BaseBoot
 {
-
-    public function __construct()
+    
+    public function run(array $data, bool $cli = false): void
     {
-        $this->envLoader();
-        $this->debug(config('app.debug', false));
+        $requestClass = $cli ? CLIRequest::class : Request::class;
+        $this->dispatcher($requestClass, $data);
     }
 
-    public function run(): void
-    {
-        $this->dispatcher(Request::class, $_SERVER);
-    }
-
-    public function cli(array $arguments): void
-    {
-        $this->dispatcher(CLIRequest::class, $arguments);
-    }
-
-    private function dispatcher($requestClass, ...$args): void
+    protected function dispatcher($requestClass, ...$args): void
     {
         /** @var BaseRequest $request */
         $request = new $requestClass(...$args);

@@ -4,7 +4,14 @@ namespace Pano\Kernel;
 
 abstract class BaseBoot
 {
-    abstract public function run(): void;
+    abstract public function run(array $data): void;
+
+    public function __construct()
+    {
+        $this->envLoader();
+        $this->debug(config('app.debug', false));
+        date_default_timezone_set((string) config('app.timezone', 'UTC'));
+    }
 
     protected function debug(bool $status): void
     {
