@@ -5,8 +5,8 @@ This is the complete developer reference for the **Pano** nano-framework.
 It explains how to build applications on top of Pano: every concept, every contract,
 every public API, and every convention you need to write working code.
 
-> For philosophy and principles, read [`MANIFESTO.md`](MANIFESTO.md).
-> For internal system design and runtime model, read [`ARCHITECTURE.md`](ARCHITECTURE.md).
+> For philosophy and principles, read [`MANIFESTO.md`](MANIFESTO.md).  
+> For internal system design and runtime model, read [`ARCHITECTURE.md`](ARCHITECTURE.md).  
 > **This document is for developers who want to *build* with Pano.**
 
 ---
@@ -55,6 +55,11 @@ decisions to you and provides only the strict runtime needed to:
 Everything else — ORMs, auth systems, mailers, queues — is yours to build or
 bring in. Pano gives you the rails; you drive the train.
 
+**Important:** Pano is distributed as a **pure library**.  
+Application-level files (`index.php`, `pano` CLI, `config/`, default modules, `.env.example`)
+are **not** included in the framework package. Use the official skeleton
+[`simcript/pano`](https://github.com/simcript/pano) for a ready-to-run application layout.
+
 Pano is built around three concepts that you must understand before writing code:
 
 - **Kernel** — abstract contracts (the `Base*` classes). Never changes behavior.
@@ -71,593 +76,401 @@ Pano is built around three concepts that you must understand before writing code
 - Composer
 - A web server (Apache with `mod_rewrite`, Nginx, or the PHP built-in server for development)
 
-### Installation
+### Installation (Library)
 
 ```bash
-composer install
+composer require simcript/pano-framework
 ```
 
-Pano has **zero** Composer dependencies of its own. The only packages in `vendor/`
-are Composer's own machinery.
+Pano has **zero** runtime Composer dependencies of its own.
 
-### Running the development server
+### Recommended: Use the Official Skeleton
 
 ```bash
-php -S localhost:8000
+composer create-project simcript/pano my-app
+cd my-app
 ```
 
-Then visit `http://localhost:8000`. You should see the default welcome page.
+This gives you a complete working layout with `public/index.php`, CLI entry point,
+`config/`, a `Default` module, and tests.
 
-### Production (Apache)
+### Running the development server (Skeleton)
 
-Point your virtual host's document root at the project folder. The included
-`.htaccess` already:
+```bash
+php -S localhost:8000 -t public
+```
 
-- forwards all non-file requests to `index.php` (front controller),
-- preserves the `Authorization` header (needed for JWT/Bearer tokens),
-- strips trailing slashes.
-
-For Nginx, replicate that behavior with a `try_files` rule falling back to `index.php`.
+Then visit `http://localhost:8000`.
 
 ---
 
 ## 3. Quick Start
 
-The default application ships with a working module so you can see every piece
-in action. The entry point is dead simple:
+Because Pano is a pure library, you bootstrap it yourself (or let the skeleton do it).
+
+### Minimal HTTP entry point
 
 ```php
-// index.php
-(new \Pano\Foundation\Boot())->run();
+<?php
+// public/index.php
+
+define('PANO_STARTED', microtime(true));
+define('BASE_PATH', rtrim(__DIR__ . '/../', DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
+
+require BASE_PATH . 'vendor/autoload.php';
+
+(new \Pano\Foundation\Boot())->run($_SERVER);
 ```
 
-That single line:
+### Minimal CLI entry point
 
-1. loads `.env`,
-2. configures error reporting,
-3. builds a `Request` from `$_SERVER`,
+```php
+#!/usr/bin/env php
+<?php
+// pano (executable)
+
+define('PANO_STARTED', microtime(true));
+define('BASE_PATH', rtrim(__DIR__, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
+
+require BASE_PATH . 'vendor/autoload.php';
+
+(new \Pano\Foundation\Boot())->run($argv, true);
+```
+
+`Boot::run(array $data, bool $cli = false)`:
+
+- Web → pass `$_SERVER`
+- CLI → pass `$argv` and set `$cli = true`
+
+That single call:
+
+1. loads `.env` (via constructor),
+2. configures error reporting and timezone,
+3. builds a `Request` / `CLIRequest`,
 4. resolves the target module,
-5. runs that module's router,
-6. dispatches the matched handler,
+5. runs that module’s router,
+6. dispatches the matched handler / command,
 7. sends the response.
-
-To make it yours, you will typically:
-
-1. create a module under `src/Modules/`,
-2. register it in `config/modules.php`,
-3. define its routes,
-4. write handlers, interceptors, and views inside it.
-
-Everything below explains how.
 
 ---
 
 ## 4. Project Structure
 
+### Framework package (library only)
+
 ```text
-project/
-│
-├── index.php              # HTTP entry point (front controller)
-├── pano                   # CLI entry point (executable)
-├── .htaccess              # Apache rewrite rules
-├── .env                   # Environment variables (not committed)
-├── .env.example           # Template for .env
-├── composer.json
-│
-├── config/                # Configuration files (one array per file)
-│   ├── app.php
-│   └── modules.php
-│
+vendor/simcript/pano-framework/
 └── src/
-    ├── helpers.php        # Global helper functions (dd, env, config, url, ...)
-    │
-    ├── Kernel/            # Abstract contracts (Base* classes + Enums)
-    │   ├── BaseBoot.php
-    │   ├── BaseModule.php
-    │   ├── BaseRouter.php
-    │   ├── BaseRequest.php
-    │   ├── BaseResponse.php
-    │   ├── BaseHandler.php
-    │   ├── BaseInterceptor.php
-    │   ├── BaseView.php
-    │   ├── BaseLogger.php
-    │   ├── BaseBag.php
-    │   ├── BaseCommand.php
-    │   ├── BaseException.php
-    │   ├── HttpMethodEnum.php
-    │   ├── HttpStatusEnum.php
-    │   ├── ResultCodeEnum.php
-    │   └── LogLevelEnum.php
-    │
-    ├── Foundation/        # Default runtime implementation (replaceable)
-    │   ├── Boot.php
-    │   ├── Router.php
-    │   ├── Request.php
-    │   ├── CLIRequest.php
-    │   ├── Response.php
-    │   ├── View.php
-    │   ├── Logger.php
-    │   ├── Bag.php
-    │   └── Exception.php
-    │
-    └── Modules/           # Your application modules
-        └── Default/
-            ├── DefaultModule.php
-            ├── Handlers/
-            ├── Interceptors/
-            ├── Commands/
-            └── Views/
+    ├── helpers.php
+    ├── Kernel/          # Abstract contracts (Base*)
+    └── Foundation/      # Default concrete implementations
 ```
 
-The PSR-4 namespace root is `Pano\` → `src/`. So:
+There is **no** application code, no `config/`, no `index.php`, and no default module inside the library.
 
-- `Pano\Kernel\BaseRouter` → `src/Kernel/BaseRouter.php`
-- `Pano\Foundation\Response` → `src/Foundation/Response.php`
-- `Pano\Modules\Default\DefaultModule` → `src/Modules/Default/DefaultModule.php`
+### Recommended application layout (Skeleton)
+
+```text
+my-app/
+├── pano                      # CLI entry point (executable)
+├── public/
+│   ├── index.php             # Web front controller
+│   └── .htaccess
+├── config/
+│   ├── app.php
+│   └── modules.php
+├── modules/                  # Your application modules (namespace Modules\)
+│   └── Default/
+│       ├── DefaultModule.php
+│       ├── Handlers/
+│       ├── Interceptors/
+│       ├── Commands/
+│       └── Views/
+├── tests/
+├── .env
+├── .env.example
+└── composer.json
+```
+
+Two constants must be defined at the very start of every entry point:
+
+| Constant       | Meaning                                              |
+|----------------|------------------------------------------------------|
+| `PANO_STARTED` | Request start timestamp (microtime), useful for timing |
+| `BASE_PATH`    | Absolute path to the project root (with trailing `/`) |
+
+Everything (config, `.env`, module paths) is resolved relative to `BASE_PATH`.
 
 ---
 
 ## 5. Mental Model — The Three Layers
 
-Understanding the separation of layers is essential. Get this right and the rest
-of the framework is obvious.
-
 ### Layer 1 — Kernel (`Pano\Kernel\*`)
 
-The Kernel is a set of **abstract classes** (`BaseBoot`, `BaseModule`,
-`BaseRouter`, `BaseRequest`, …) and **enums**. It defines contracts only. It
-never contains executable application behavior and it has no dependencies.
+Abstract classes (`BaseBoot`, `BaseModule`, `BaseRouter`, `BaseRequest`, …) and enums.  
+Contracts only. No application behavior, no dependencies.
 
-You do **not** instantiate Kernel classes directly. You extend them (through the
-Foundation) or replace them.
+You **never** instantiate Kernel classes directly. You extend them or use the Foundation implementations.
 
 ### Layer 2 — Foundation (`Pano\Foundation\*`)
 
-The Foundation is the **default implementation** of the Kernel. Classes here are
-`final` (e.g. `final class Router extends BaseRouter`) and provide working
-behavior: HTTP parsing, routing, JSON/HTML responses, file logging, etc.
+Default concrete implementations (`final` classes). Provide working HTTP/CLI parsing,
+routing, responses, views, logging, etc.
 
-Crucially, the Foundation is **replaceable**. You can throw it away and write
-your own implementation of the Kernel contracts — Pano will still work.
+The Foundation is **replaceable**. You can implement the Kernel contracts yourself.
 
-### Layer 3 — Modules (`Pano\Modules\*`)
+### Layer 3 — Modules (your code)
 
-This is where **your code** lives. A module is a self-contained unit that:
-
-- defines its routes,
-- provides a `View` and a `Logger`,
-- contains its own handlers, interceptors, commands, and views.
-
-Modules are isolated from each other by convention. They communicate through
-explicit contracts, never through global state.
+Self-contained units that own routes, handlers, interceptors, commands and views.  
+In the skeleton they live under the `Modules\` namespace (e.g. `Modules\Blog\BlogModule`).
 
 ---
 
 ## 6. The Request Lifecycle
 
-Every HTTP request flows through this pipeline:
-
 ```text
-index.php
+Entry point (index.php / pano)
    │
    ▼
 Boot::__construct()
    ├── envLoader()            → parses .env into $_ENV / $_SERVER
-   └── debug()                → sets error_reporting & display_errors
+   ├── debug()                → sets error_reporting & display_errors
+   └── timezone               → date_default_timezone_set(config('app.timezone'))
    │
    ▼
-Boot::run()
-   └── new Request($_SERVER)  → builds the request object
+Boot::run($data, $cli)
+   └── dispatcher(Request|CLIRequest, $data)
    │
    ▼
-Boot::dispatcher()
-   ├── request->getModule()   → resolves module name (by path or subdomain)
-   ├── config('modules.X')    → maps module name to a module class
-   ├── new $Module($request)  → instantiates the module
+dispatcher()
+   ├── new Request|CLIRequest
+   ├── request->getModule()   → resolves module key (path or subdomain)
+   ├── config('modules.X')    → maps key to module class
+   ├── new $Module($request)
    └── $module->routes()->handle()
    │
    ▼
 Router::handle()
-   └── dispatchHttp()
-        ├── match URL against registered routes
-        ├── build interceptor instances
-        ├── run each  interceptor->onRequest()      (in order)
-        ├── instantiate the Handler($request, $module)
-        ├── call Handler->action(...$routeParams)
-        ├── run each  interceptor->onResponse($res) (in reverse order)
-        └── $response->send()
+   ├── match route / command
+   ├── run interceptors (onRequest → handler → onResponse)
+   └── $response->send()
 ```
 
-If **anything** throws during this flow, the global `try/catch` in `dispatcher()`
-converts it into a `Response` via `Response::exception()` and sends it. No
-request can crash the process uncaught.
-
-The CLI lifecycle is the same conceptually, except `Boot::cli($argv)` builds a
-`CLIRequest` and the router dispatches to a **command** instead of an HTTP route.
+Any uncaught throwable is converted by `Response::exception()` and sent.  
+No request should crash the process uncaught.
 
 ---
 
 ## 7. Configuration
 
-All configuration lives in `config/*.php`. Each file returns an array and is
-loaded lazily by the `config()` helper.
+All configuration lives in `config/*.php` (relative to `BASE_PATH`).  
+Each file returns an array and is loaded lazily by the `config()` helper.
+
+### Minimum required `config/app.php`
 
 ```php
-// config/app.php
+<?php
+
 return [
     'name'     => env('APP_NAME', 'Pano'),
     'env'      => env('APP_ENV', 'local'),
     'key'      => env('APP_KEY', null),
     'debug'    => env('APP_DEBUG', false),
     'url'      => env('APP_URL', null),
-    'resolver' => env('MODULE_RESOLVER', 'path'),
+    'resolver' => env('MODULE_RESOLVER', 'path'),   // "path" | "subdomain"
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
 ];
 ```
 
-### Reading config values
+| Key        | Type         | Default  | Description                                      |
+|------------|--------------|----------|--------------------------------------------------|
+| `name`     | string       | `Pano`   | Application display name                         |
+| `env`      | string       | `local`  | Current environment                              |
+| `key`      | string\|null | `null`   | Application secret key                           |
+| `debug`    | bool         | `false`  | Show detailed errors                             |
+| `url`      | string\|null | `null`   | Base application URL (used by `url()` & subdomain resolver) |
+| `resolver` | string       | `path`   | Module resolution strategy                       |
+| `timezone` | string       | `UTC`    | Default timezone                                 |
 
-Use the `config()` helper with dot notation:
+### `config/modules.php`
 
-```php
-config('app.debug');          // true / false
-config('app.name');           // 'Pano'
-config('modules.users');      // a module class name (or null)
-config('app.nonexistent', 'fallback');
-```
-
-Dot notation walks the array. The first segment is the filename (without `.php`);
-subsequent segments are array keys.
-
-### Adding configuration
-
-Create a new file, e.g. `config/database.php`:
+Maps an incoming module key to a module class:
 
 ```php
+<?php
+
 return [
-    'host' => env('DB_HOST', '127.0.0.1'),
-    'name' => env('DB_NAME', 'app'),
+    ''     => \Modules\Default\DefaultModule::class,   // default / root
+    'blog' => \Modules\Blog\BlogModule::class,
 ];
 ```
 
-It is automatically available as `config('database.host')` with no registration.
+The empty-string key (`''`) is the module that serves the root when using path-based resolution.
 
-### Module registration
-
-`config/modules.php` maps an incoming module name to a module class:
+### Reading config
 
 ```php
-return [
-    ''     => \Pano\Modules\Default\DefaultModule::class,
-    'blog' => \Pano\Modules\Blog\BlogModule::class,
-    'api'  => \Pano\Modules\Api\ApiModule::class,
-];
+config('app.debug');                 // bool
+config('app.name');                  // string
+config('modules.blog');              // class name or null
+config('app.missing', 'fallback');   // with default
 ```
-
-The empty-string key (`''`) is the module that serves the **root** of the site
-when path-based resolution is used (see [Module Resolution](#module-resolution)).
 
 ---
 
 ## 8. Environment Variables
 
-Pano ships with its own tiny `.env` parser — no third-party package needed.
-
-`.env` syntax:
+Pano ships with its own tiny `.env` parser (no third-party package).
 
 ```ini
 APP_NAME=MyApp
-APP_DEBUG=true              # parsed as boolean true
-APP_PORT=8080               # parsed as integer 8080
-APP_KEY=null                # parsed as null
-APP_URL="https://example.com"
-# this is a comment
+APP_ENV=local
+APP_KEY=base64:your-key-here
+APP_DEBUG=true
+APP_URL=https://example.com
+MODULE_RESOLVER=path
+APP_TIMEZONE=UTC
 ```
 
-The parser recognizes (case-insensitive) `true`, `false`, `null`, and numeric
-values, and strips surrounding quotes. Loaded values are written to `$_ENV`,
-`$_SERVER`, and `putenv()`.
-
-Read them with the `env()` helper:
+Values `true` / `false` / `null` (case-insensitive) and numeric strings are parsed automatically.  
+Quotes around values are stripped.
 
 ```php
-env('APP_NAME', 'Pano');   // 'MyApp'
-env('APP_DEBUG', false);   // true
-env('MISSING', 'default'); // 'default'
+env('APP_NAME', 'Pano');
+env('APP_DEBUG', false);
 ```
 
 ---
 
 ## 9. Helper Functions
 
-These globals are always available (autoloaded via `composer.json`).
+Always available (autoloaded via `composer.json`):
 
 | Function | Description |
-|---|---|
-| `env(string $key, mixed $default = null): mixed` | Read an environment variable. |
-| `config(string $key, mixed $default = null): mixed` | Read a config value with dot notation. |
-| `url(string $path): string` | Build an absolute URL using `app.url` as the base. |
-| `currentUrl(): string` | The absolute URL of the current request. |
-| `dd(...$args): void` | Dump arguments and die (formatted for CLI or web). |
-
-```php
-url('blog/post/12');
-// https://example.com/blog/post/12
-
-dd($request, $user, $_POST);   // inspect and stop
-```
-
-`dd()` detects whether it is running in a terminal or a browser and formats
-output accordingly (colored text in CLI, styled `<pre>` in HTML).
+|----------|-------------|
+| `env(string $key, mixed $default = null): mixed` | Read environment variable |
+| `config(string $key, mixed $default = null): mixed` | Read config with dot notation |
+| `url(string $path): string` | Absolute URL using `app.url` |
+| `currentUrl(): string` | Absolute URL of the current request |
+| `dd(...$args): void` | Dump and die (CLI-colored or HTML-styled) |
 
 ---
 
 ## 10. Modules
 
-A **module** is the unit of application code in Pano. Each module owns its
-routes, handlers, interceptors, commands, and views.
-
-### Anatomy of a module
-
-A module is a class extending `BaseModule`:
+A module is a `final readonly` class extending `Pano\Kernel\BaseModule`.  
+It **must** implement three methods:
 
 ```php
-namespace Pano\Modules\Blog;
-
-use Pano\Foundation\Exception;
-use Pano\Foundation\Logger;
-use Pano\Foundation\View;
-use Pano\Kernel\BaseLogger;
-use Pano\Kernel\BaseModule;
-use Pano\Kernel\BaseRouter;
-use Pano\Kernel\BaseView;
-use Pano\Modules\Blog\Handlers\PostHandler;
-
-final readonly class BlogModule extends BaseModule
-{
-    public function routes(): BaseRouter
-    {
-        $this->router->get('/', PostHandler::class, 'index');
-        $this->router->get('/posts/[id]', PostHandler::class, 'show');
-
-        return $this->router;
-    }
-
-    public function view(): BaseView
-    {
-        return new View($this->viewPath());
-    }
-
-    public function log(): BaseLogger
-    {
-        return new Logger($this->logPath());
-    }
-}
+public function routes(): BaseRouter;
+public function view(): BaseView;
+public function log(): BaseLogger;
 ```
 
-### What `BaseModule` gives you
-
-`BaseModule` is `abstract readonly`. Its constructor receives the `BaseRequest`
-and automatically creates a `Router` bound to both the request and the module:
+### Path helpers (via reflection)
 
 ```php
-public function __construct(protected BaseRequest $request)
-{
-    $this->router = new Router($this->request, $this);
-}
+$this->viewPath();   // .../Modules/Blog/Views
+$this->filePath();   // .../Modules/Blog/Files
+$this->logPath();    // .../Modules/Blog/Logs
+$this->path();       // .../Modules/Blog
+$this->name();       // "BlogModule"
 ```
 
-You must implement three abstract methods:
+Register every module in `config/modules.php`.
 
-| Method | Returns | Purpose |
-|---|---|---|
-| `routes()` | `BaseRouter` | Register the module's HTTP routes and CLI commands. |
-| `view()` | `BaseView` | Provide the view engine (usually `new View($this->viewPath())`). |
-| `log()` | `BaseLogger` | Provide the logger (usually `new Logger($this->logPath())`). |
+### Module Resolution
 
-### Path helpers
+Controlled by `config('app.resolver')` / `MODULE_RESOLVER`:
 
-`BaseModule` resolves its own filesystem location via reflection, so you never
-hardcode paths:
+**`path` (default)**  
+First URL segment = module key. Rest = route path.
 
-```php
-$module->path();           // /abs/src/Modules/Blog
-$module->path('Views');    // /abs/src/Modules/Blog/Views
-$module->viewPath();       // .../Blog/Views
-$module->logPath();        // .../Blog/Logs
-$module->filePath();       // .../Blog/Files
-$module->name();           // 'BlogModule' (short class name)
-```
+| URL              | Module key | Route path   |
+|------------------|------------|--------------|
+| `/blog/posts/12` | `blog`     | `/posts/12`  |
+| `/`              | `''`       | `/`          |
 
-This means you can move a module folder freely and everything keeps working.
+**`subdomain`**  
+Subdomain = module key. Root domain is taken from `APP_URL`.
 
-### Registering a module
+| Host                       | Module key |
+|----------------------------|------------|
+| `blog.example.com`         | `blog`     |
+| `api.v2.example.com`       | `api.v2`   |
+| `example.com`              | `''`       |
 
-Add an entry in `config/modules.php`:
-
-```php
-return [
-    ''    => \Pano\Modules\Default\DefaultModule::class,
-    'blog' => \Pano\Modules\Blog\BlogModule::class,
-];
-```
-
-### Suggested module folder layout
-
-```text
-src/Modules/Blog/
-├── BlogModule.php
-├── Handlers/
-│   └── PostHandler.php
-├── Interceptors/
-│   └── AuthInterceptor.php
-├── Commands/
-│   └── PublishCommand.php
-├── Views/
-│   ├── layout.php
-│   ├── index.php
-│   └── show.php
-├── Files/        # static module assets (optional)
-└── Logs/         # module-specific log files (optional)
-```
+If the resolved key has no matching entry in `config/modules.php`, Pano throws  
+`No module found for '<name>'`.
 
 ---
 
 ## 11. Routing
 
-Routing is defined **inside each module** via `$this->router`. Routes are plain
-class/method references — no anonymous closures, no strings-to-resolve. This
-keeps everything explicit and statically analyzable.
-
-### Registering HTTP routes
+Routes are registered inside the module’s `routes()` method:
 
 ```php
-$this->router->get(string $path, string $handlerClass, string $method, array $interceptors = []);
-$this->router->post(string $path, string $handlerClass, string $method, array $interceptors = []);
-$this->router->put(string $path, string $handlerClass, string $method, array $interceptors = []);
-$this->router->delete(string $path, string $handlerClass, string $method, array $interceptors = []);
+$router = new \Pano\Foundation\Router($this->request, $this);
+
+$router->get('/posts', PostHandler::class, 'index');
+$router->get('/posts/[id]', PostHandler::class, 'show');
+$router->post('/posts', PostHandler::class, 'store', [AuthInterceptor::class]);
+$router->put('/posts/[id]', PostHandler::class, 'update');
+$router->delete('/posts/[id]', PostHandler::class, 'destroy');
+
+$router->command('blog:publish', PublishCommand::class);
+
+return $router;
 ```
-
-Example:
-
-```php
-$this->router->get('/', HomeController::class, 'index');
-$this->router->post('/login', AuthController::class, 'login', [RateLimitInterceptor::class]);
-$this->router->put('/posts/[id]', PostController::class, 'update', [AuthInterceptor::class]);
-$this->router->delete('/posts/[id]', PostController::class, 'destroy', [AuthInterceptor::class]);
-```
-
-At registration time, the router **validates** each route:
-
-- the handler class must exist and extend `BaseHandler`,
-- the action method must exist, be `public`, and declare a return type,
-- that return type must be `BaseResponse` or a subclass,
-- every interceptor class must exist, be non-abstract, and extend `BaseInterceptor`.
-
-If any check fails, a descriptive `Exception` is thrown immediately — you find
-routing bugs at boot, not at request time.
 
 ### Route parameters
 
-Parameters are written in **brackets**. Three flavors are supported:
+| Syntax   | Meaning                                 |
+|----------|-----------------------------------------|
+| `[id]`   | Required segment                        |
+| `[id?]`  | Optional (must be the **last** segment) |
+| `[id*]`  | Catch-all (must be the **last** segment)|
 
-| Syntax | Meaning | Regex equivalent |
-|---|---|---|
-| `[id]` | required segment | `[^/]+` |
-| `[slug?]` | optional segment | `[^/]+` (may be absent) |
-| `[path*]` | catch-all (multi-segment) | `.+` (may be absent) |
-
-```php
-$this->router->get('/users/[id]', UserController::class, 'show');
-$this->router->get('/posts/[year?]', PostController::class, 'archive');
-$this->router->get('/files/[path*]', FileController::class, 'download');
-```
-
-Matched values are passed as **method arguments in declaration order**:
-
-```php
-// route: /posts/[id]/comments/[commentId]
-public function show(string $id, string $commentId): Response { ... }
-```
-
-> **Constraint:** optional (`?`) and catch-all (`*`) parameters must be the
-> **last** segment of a route. The router enforces this and throws otherwise.
-
-### Per-route interceptors
-
-The fourth argument is an array of interceptor **class names**. They run for
-that route only (see [Interceptors](#13-interceptors)).
-
-### Module resolution
-
-The first segment of a request URL (or the subdomain) selects the **module**.
-`config/app.php` controls this via the `resolver` key:
-
-```php
-'resolver' => env('MODULE_RESOLVER', 'path'),   // 'path' or 'subdomain'
-```
-
-- **`path`** — the first URL segment is the module name.  
-  `https://app.test/blog/posts/12` → module `blog`, route `/posts/[id]`.  
-  The root `https://app.test/` maps to the module registered under the `''` key.
-
-- **`subdomain`** — the subdomain is the module name.  
-  `https://blog.app.test/posts/12` → module `blog`, route `/posts/[id]`.
-
-If the resolved module is not registered in `config/modules.php`, Pano throws
-`"No module found for '<name>'"`.
+Parameters are passed to the handler method **in declaration order**.
 
 ---
 
 ## 12. Handlers
 
-A **handler** is the class that actually does the work for a route. It extends
-`BaseHandler` and contains one public method per action.
+A handler extends `Pano\Kernel\BaseHandler`.  
+Each public action method **must** declare a return type of `BaseResponse` (or subclass).
 
 ```php
-namespace Pano\Modules\Blog\Handlers;
-
-use Pano\Foundation\Response;
-use Pano\Kernel\BaseHandler;
-
 final class PostHandler extends BaseHandler
 {
     public function index(): Response
     {
-        return Response::html('list of posts');
+        return Response::json(['posts' => []]);
     }
 
-    public function show(string $id): Response
+    public function show($id): Response
     {
-        return Response::json(['id' => $id, 'title' => 'Hello']);
+        return Response::json(['id' => $id]);
+    }
+
+    public function store(): Response
+    {
+        $data = $this->request->getData();
+        return Response::json(['created' => true], HttpStatusEnum::CREATED);
     }
 }
 ```
 
-### What `BaseHandler` gives you
+`$this->request` and `$this->module` are available.
 
-```php
-abstract class BaseHandler
-{
-    public function __construct(
-        public readonly BaseRequest $request,
-        public readonly BaseModule  $module
-    ) {}
-}
-```
+### Method override
 
-Inside any action you have direct access to:
+On `POST` requests Pano respects:
 
-- `$this->request` — the current request (headers, body, query, files, attributes).
-- `$this->module` — the owning module (and through it, `view()`, `log()`, paths).
+- header `X-HTTP-Method-Override`, or
+- body field `_method`
 
-```php
-public function create(): Response
-{
-    $title = $this->request->getData()['title'] ?? null;
-    $this->module->log()->info('Creating post', ['title' => $title]);
-    ...
-}
-```
-
-### Rules for action methods
-
-1. The method **must** be `public`.
-2. The method **must** declare a return type.
-3. The return type **must** be `BaseResponse` or a subclass (e.g. `Response`).
-4. The method **must** actually return a `BaseResponse` at runtime.
-
-These are enforced. Breaking any of them throws a clear exception.
-
-### Action arguments
-
-Action arguments come from route parameters, in order:
-
-```php
-// Route: /posts/[id]/comments/[commentId]
-public function show(string $id, string $commentId): Response { ... }
-```
-
-You may omit trailing optional parameters; their value will be `null`.
+so HTML forms can simulate `PUT` / `DELETE` / `PATCH`.
 
 ---
 
@@ -669,7 +482,7 @@ request transformation, response decoration. They run **around** a handler.
 An interceptor extends `BaseInterceptor`:
 
 ```php
-namespace Pano\Modules\Blog\Interceptors;
+namespace Modules\Blog\Interceptors;
 
 use Pano\Kernel\BaseInterceptor;
 use Pano\Kernel\BaseResponse;
@@ -839,6 +652,7 @@ Response::html(string $html, HttpStatusEnum $status = OK, array $headers = []): 
 Response::stream(callable $callback, string $contentType = 'application/octet-stream', HttpStatusEnum $status = OK, array $headers = []): self;
 Response::redirect(string $to, HttpStatusEnum $status = FOUND, array $headers = []): self;
 Response::terminal(string $text, ResultCodeEnum $status = OK): self;   // for CLI
+Response::exception(\Throwable $e, BaseRequest $request): self;
 ```
 
 ### Examples
@@ -1177,7 +991,7 @@ For richer domain errors, extend `BaseException` and implement `toArray()` and
 `toHtml()`:
 
 ```php
-namespace Pano\Modules\Blog\Exceptions;
+namespace Modules\Blog\Exceptions;
 
 use Pano\Kernel\BaseException;
 use Pano\Kernel\HttpStatusEnum;
@@ -1261,7 +1075,7 @@ Inside a module's `routes()`, call `command()` with a command name and a
 command class:
 
 ```php
-$this->router->command('app:info', \Pano\Modules\Default\Commands\DefaultCommand::class);
+$this->router->command('app:info', \Modules\Default\Commands\DefaultCommand::class);
 ```
 
 The command name (`app:info`) is the string matched against the command segment
@@ -1271,7 +1085,7 @@ any namespace-style name you like.
 The command class must extend `BaseCommand` and implement `handle()`:
 
 ```php
-namespace Pano\Modules\Blog\Commands;
+namespace Modules\Blog\Commands;
 
 use Pano\Kernel\BaseCommand;
 use Pano\Kernel\ResultCodeEnum;
@@ -1302,10 +1116,10 @@ final class PublishCommand extends BaseCommand
 `BaseCommand` gives you:
 
 - `$this->request` — the `CLIRequest`, exposing:
-  - `getPositional()` — indexed array of positional arguments (everything after
-    the command that does not start with `--`),
-  - `getOptions()` — associative array of `--key=value` / `--flag` options,
-  - `getModule()`, `getCommand()`, `getSegments()`, `getPath()`.
+    - `getPositional()` — indexed array of positional arguments (everything after
+      the command that does not start with `--`),
+    - `getOptions()` — associative array of `--key=value` / `--flag` options,
+    - `getModule()`, `getCommand()`, `getSegments()`, `getPath()`.
 - `$this->module` — the owning module (so `$this->module->log()` works in CLI too),
 - `$this->info($text)` — print a green line,
 - `$this->error($text)` — print a red line.
@@ -1421,7 +1235,7 @@ at your implementations.
 // public/index.php
 require __DIR__ . '/../vendor/autoload.php';
 
-(new \App\Foundation\Boot())->run();   // your boot, not Pano\Foundation\Boot
+(new \App\Foundation\Boot())->run($_SERVER);   // your boot, not Pano\Foundation\Boot
 ```
 
 ```php
@@ -1438,7 +1252,7 @@ final class Boot extends BaseBoot
         // your own bootstrap steps here
     }
 
-    public function run(): void
+    public function run(array $data, bool $cli = false): void
     {
         // your own request handling, as long as it honors Kernel contracts
     }
@@ -1499,15 +1313,15 @@ CLI command.
 ```php
 // config/modules.php
 return [
-    ''    => \Pano\Modules\Default\DefaultModule::class,
-    'blog' => \Pano\Modules\Blog\BlogModule::class,
+    ''    => \Modules\Default\DefaultModule::class,
+    'blog' => \Modules\Blog\BlogModule::class,
 ];
 ```
 
 ### 2. The module class
 
 ```php
-namespace Pano\Modules\Blog;
+namespace Modules\Blog;
 
 use Pano\Foundation\Logger;
 use Pano\Foundation\View;
@@ -1515,9 +1329,9 @@ use Pano\Kernel\BaseLogger;
 use Pano\Kernel\BaseModule;
 use Pano\Kernel\BaseRouter;
 use Pano\Kernel\BaseView;
-use Pano\Modules\Blog\Commands\PublishCommand;
-use Pano\Modules\Blog\Handlers\PostHandler;
-use Pano\Modules\Blog\Interceptors\AuthInterceptor;
+use Modules\Blog\Commands\PublishCommand;
+use Modules\Blog\Handlers\PostHandler;
+use Modules\Blog\Interceptors\AuthInterceptor;
 
 final readonly class BlogModule extends BaseModule
 {
@@ -1546,7 +1360,7 @@ final readonly class BlogModule extends BaseModule
 ### 3. The interceptor
 
 ```php
-namespace Pano\Modules\Blog\Interceptors;
+namespace Modules\Blog\Interceptors;
 
 use Pano\Foundation\Exception;
 use Pano\Kernel\BaseInterceptor;
@@ -1583,7 +1397,7 @@ final class AuthInterceptor extends BaseInterceptor
 ### 4. The handler
 
 ```php
-namespace Pano\Modules\Blog\Handlers;
+namespace Modules\Blog\Handlers;
 
 use Pano\Foundation\Response;
 use Pano\Kernel\BaseHandler;
@@ -1631,7 +1445,7 @@ final class PostHandler extends BaseHandler
 }
 ```
 
-### 5. The view (`src/Modules/Blog/Views/show.php`)
+### 5. The view (`modules/Blog/Views/show.php`)
 
 ```php
 <?php $this->start('title') ?><?= $this->e($post['title']) ?><?php $this->end() ?>
@@ -1645,7 +1459,7 @@ final class PostHandler extends BaseHandler
 ### 6. The CLI command
 
 ```php
-namespace Pano\Modules\Blog\Commands;
+namespace Modules\Blog\Commands;
 
 use Pano\Kernel\BaseCommand;
 use Pano\Kernel\ResultCodeEnum;
@@ -1671,7 +1485,7 @@ final class PublishCommand extends BaseCommand
 
 ```bash
 # Web
-php -S localhost:8000
+php -S localhost:8000 -t public
 #   http://localhost:8000/blog           → index (JSON)
 #   http://localhost:8000/blog/posts/1   → show (HTML)
 
@@ -1704,7 +1518,7 @@ php pano blog blog:publish 1
 
 | Class | Role |
 |---|---|
-| `Boot` | Default bootstrap (HTTP `run()` + CLI `cli()`). |
+| `Boot` | Default bootstrap (`run(array $data, bool $cli = false)`). |
 | `Router` | Default router (GET/POST/PUT/DELETE + commands). |
 | `Request` | HTTP request built from `$_SERVER`. |
 | `CLIRequest` | Console request built from `$argv`. |
