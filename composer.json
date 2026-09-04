@@ -1,5 +1,5 @@
 {
-  "name": "pano-php/pano-framework",
+  "name": "pano-php/framework",
   "description": "A lightweight PHP Nano Framework - Minimal execution foundation with full developer control",
   "type": "library",
   "license": "MIT",
